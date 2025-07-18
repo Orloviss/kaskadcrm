@@ -19,7 +19,7 @@ $red: #d32f2f;
   cursor: pointer;
   display: flex;
   align-items: center;
-  min-width: 7.5rem;
+  font-size: 0.7rem;
   position: relative;
 }
 .custom-select__selected .arrow {
@@ -43,6 +43,7 @@ $red: #d32f2f;
   padding: 0.5rem 0.75rem;
   cursor: pointer;
   transition: background 0.15s;
+  font-size: 0.8rem;
 }
 .custom-select__option:hover, .custom-select__option.selected {
   background: #e8f5e9;

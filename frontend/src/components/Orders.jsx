@@ -141,7 +141,7 @@ function Orders({ setStatsBalance }) {
         />
         <button className="filters-btn" onClick={openFilters}>Фильтры</button>
       </div>
-      <div className="orders-filters-drawer" style={{right: showFilters ? 0 : '-320px'}}>
+      <div className="orders-filters-drawer" style={{right: showFilters ? 0 : '-120vw'}}>
         <div className="filters-title">Фильтры <button className="close-btn" onClick={() => setShowFilters(false)}>×</button></div>
         {/* Категории */}
         <div className="filters-block">
@@ -243,7 +243,7 @@ function Orders({ setStatsBalance }) {
             <input type="date" value={pendingFilters.dateTo} onChange={e => setPendingFilters(f => ({ ...f, dateTo: e.target.value }))} />
           </div>
         </div>
-        <div style={{display:'flex',gap:8}}>
+        <div className='filter-buttons'>
           <button className="reset-btn" type="button" onClick={resetPendingFilters}>Сбросить фильтр</button>
           <button className="apply-btn" type="button" onClick={() => { setFilters(pendingFilters); setShowFilters(false); }}>Применить фильтры</button>
         </div>
@@ -253,10 +253,16 @@ function Orders({ setStatsBalance }) {
         <div style={{padding: 32, textAlign: 'center', color: '#888'}}>Ничего не найдено, попробуйте изменить фильтры</div>
       ) : (
         filtered.map(tx => (
+          <div className="order-items">
           <div className="order-item" key={tx.id} onClick={() => setSelected(tx)}>
-            <span className={tx.type === 'add' ? 'dot-income' : 'dot-expense'}></span>
-            <span className="order-amount">{tx.amount} ₽</span>
-            <span className="order-date">{tx.date || tx.created_at?.slice(0,10)}</span>
+           <div className="left__col">
+           <span className={tx.type === 'add' ? 'dot-income' : 'dot-expense'}></span>
+           <span className="order-amount">{tx.amount} ₽</span>
+           </div>
+         <div className="right__col">
+         <span className="order-date">{tx.date || tx.created_at?.slice(0,10)}</span>
+         </div>
+          </div>
           </div>
         ))
       )}
@@ -269,8 +275,8 @@ function Orders({ setStatsBalance }) {
             <div>Сумма: {selected.amount} ₽</div>
             <div>Описание: {selected.description}</div>
             {selected.photo && (
-              <div style={{marginTop:8}}>
-                <img src={`http://localhost:4000/uploads/${selected.photo}`} alt="Фото" style={{maxWidth:200, cursor:'pointer'}} onClick={() => setLightbox(selected.photo)} />
+              <div className='modalImage'>
+                <img src={`http://localhost:4000/uploads/${selected.photo}`} alt="Фото" style={{ cursor:'pointer'}} onClick={() => setLightbox(selected.photo)} />
               </div>
             )}
             <div className="modal-actions">
