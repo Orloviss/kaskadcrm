@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { API_BASE_URL } from '../config';
 
 function TransactionModal({ type, onClose }) {
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
@@ -13,7 +14,7 @@ function TransactionModal({ type, onClose }) {
   useEffect(() => {
     async function fetchCategories() {
       try {
-        const res = await fetch('http://localhost:4000/api/funds/categories', {
+        const res = await fetch(`${API_BASE_URL}/funds/categories`, {
           headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
         });
         const data = await res.json();
@@ -38,7 +39,7 @@ function TransactionModal({ type, onClose }) {
     formData.append('date', date);
     if (photo) formData.append('photo', photo);
     try {
-      const res = await fetch('http://localhost:4000/api/funds/add', {
+      const res = await fetch(`${API_BASE_URL}/funds/add`, {
         method: 'POST',
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         body: formData

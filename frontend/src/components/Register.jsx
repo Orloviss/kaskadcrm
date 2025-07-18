@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import CustomSelect from './CustomSelect';
 import './CustomSelect.scss';
+import { API_BASE_URL } from '../config';
 
 const roleOptions = [
   { value: 'admin', label: 'Админ' },
@@ -25,7 +26,7 @@ function Register() {
       return;
     }
     try {
-      const res = await fetch('http://localhost:4000/api/auth/register', {
+      const res = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password, role, question })

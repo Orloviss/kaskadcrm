@@ -4,6 +4,7 @@ import CustomCheckbox from './CustomCheckbox';
 import CustomSelect from './CustomSelect';
 import './CustomCheckbox.scss';
 import './CustomSelect.scss';
+import { API_BASE_URL, UPLOADS_BASE_URL } from '../config';
 
 const categories = [
   'Мебель',
@@ -68,7 +69,7 @@ function Orders({ setStatsBalance }) {
 
   useEffect(() => {
     if (location.pathname === '/stats') {
-      fetch('http://localhost:4000/api/funds/all', {
+      fetch(`${API_BASE_URL}/funds/all`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       })
         .then(res => res.json())
@@ -276,7 +277,7 @@ function Orders({ setStatsBalance }) {
             <div>Описание: {selected.description}</div>
             {selected.photo && (
               <div className='modalImage'>
-                <img src={`http://localhost:4000/uploads/${selected.photo}`} alt="Фото" style={{ cursor:'pointer'}} onClick={() => setLightbox(selected.photo)} />
+                <img src={`${UPLOADS_BASE_URL}/${selected.photo}`} alt="Фото" style={{ cursor:'pointer'}} onClick={() => setLightbox(selected.photo)} />
               </div>
             )}
             <div className="modal-actions">
@@ -288,7 +289,7 @@ function Orders({ setStatsBalance }) {
       {lightbox && (
         <div className="modal-backdrop" onClick={() => setLightbox(null)}>
           <div className="modal" style={{background:'none', boxShadow:'none', display:'flex',alignItems:'center',justifyContent:'center'}}>
-            <img src={`http://localhost:4000/uploads/${lightbox}`} alt="Фото" style={{maxWidth:'90vw', maxHeight:'80vh', borderRadius:8, boxShadow:'0 2px 16px rgba(0,0,0,0.3)'}} />
+            <img src={`${UPLOADS_BASE_URL}/${lightbox}`} alt="Фото" style={{maxWidth:'90vw', maxHeight:'80vh', borderRadius:8, boxShadow:'0 2px 16px rgba(0,0,0,0.3)'}} />
           </div>
         </div>
       )}

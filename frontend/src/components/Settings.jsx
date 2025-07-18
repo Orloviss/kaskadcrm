@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Settings.scss';
+import { API_BASE_URL } from '../config';
 
 function Settings() {
   const [incomeCategories, setIncomeCategories] = useState([]);
@@ -14,7 +15,7 @@ function Settings() {
   // Загрузка категорий с backend
   const fetchCategories = async () => {
     try {
-      const res = await fetch('http://localhost:4000/api/funds/categories', {
+      const res = await fetch(`${API_BASE_URL}/funds/categories`, {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
       });
       const data = await res.json();
@@ -28,7 +29,7 @@ function Settings() {
 
   const handleAddIncomeCat = async () => {
     if (newIncomeCat && !incomeCategories.find(c => c.name === newIncomeCat)) {
-      await fetch('http://localhost:4000/api/funds/categories', {
+      await fetch(`${API_BASE_URL}/funds/categories`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -42,7 +43,7 @@ function Settings() {
   };
   const handleAddExpenseCat = async () => {
     if (newExpenseCat && !expenseCategories.find(c => c.name === newExpenseCat)) {
-      await fetch('http://localhost:4000/api/funds/categories', {
+      await fetch(`${API_BASE_URL}/funds/categories`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -55,14 +56,14 @@ function Settings() {
     }
   };
   const handleRemoveIncomeCat = async (cat) => {
-    await fetch(`http://localhost:4000/api/funds/categories/${cat.id}`, {
+    await fetch(`${API_BASE_URL}/funds/categories/${cat.id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     });
     fetchCategories();
   };
   const handleRemoveExpenseCat = async (cat) => {
-    await fetch(`http://localhost:4000/api/funds/categories/${cat.id}`, {
+    await fetch(`${API_BASE_URL}/funds/categories/${cat.id}`, {
       method: 'DELETE',
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
     });
@@ -77,7 +78,7 @@ function Settings() {
       return;
     }
     try {
-      const res = await fetch('http://localhost:4000/api/auth/change-password', {
+      const res = await fetch(`${API_BASE_URL}/auth/change-password`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -101,7 +102,7 @@ function Settings() {
     setMessage(''); setError('');
     if (!login) return;
     try {
-      const res = await fetch('http://localhost:4000/api/auth/change-login', {
+      const res = await fetch(`${API_BASE_URL}/auth/change-login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

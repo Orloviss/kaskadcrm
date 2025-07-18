@@ -24,16 +24,20 @@ router.post("/register", (req, res) => {
     return res.status(400).json({ message: "Missing fields" });
   if (question !== "$22hs8931!")
     return res.status(400).json({ message: "Ответ на вопрос неверный" });
-  db.get("SELECT * FROM users WHERE username = ?", [username], (err, user) => {
+  
+  // Приводим логин к нижнему регистру
+  const normalizedUsername = username.toLowerCase();
+  
+  db.get("SELECT * FROM users WHERE LOWER(username) = ?", [normalizedUsername], (err, user) => {
     if (user) return res.status(400).json({ message: "User exists" });
     const hash = bcrypt.hashSync(password, 8);
     db.run(
       "INSERT INTO users (username, password, role) VALUES (?, ?, ?)",
-      [username, hash, role || "admin"],
+      [normalizedUsername, hash, role || "admin"],
       function (err) {
         if (err) return res.status(500).json({ message: "DB error" });
         const token = jwt.sign(
-          { id: this.lastID, username, role: role || "admin" },
+          { id: this.lastID, username: normalizedUsername, role: role || "admin" },
           JWT_SECRET,
           { expiresIn: "7d" }
         );
@@ -45,12 +49,16 @@ router.post("/register", (req, res) => {
 
 router.post("/login", (req, res) => {
   const { username, password } = req.body;
-  db.get("SELECT * FROM users WHERE username = ?", [username], (err, user) => {
+  
+  // Приводим логин к нижнему регистру
+  const normalizedUsername = username.toLowerCase();
+  
+  db.get("SELECT * FROM users WHERE LOWER(username) = ?", [normalizedUsername], (err, user) => {
     if (!user) return res.status(400).json({ message: "Invalid credentials" });
     if (!bcrypt.compareSync(password, user.password))
       return res.status(400).json({ message: "Invalid credentials" });
     const token = jwt.sign(
-      { id: user.id, username, role: user.role },
+      { id: user.id, username: user.username, role: user.role },
       JWT_SECRET,
       { expiresIn: "7d" }
     );
@@ -82,11 +90,15 @@ router.post("/change-password", authMiddleware, (req, res) => {
 router.post("/change-login", authMiddleware, (req, res) => {
   const { newLogin } = req.body;
   if (!newLogin) return res.status(400).json({ message: "Missing fields" });
-  db.get("SELECT * FROM users WHERE username = ?", [newLogin], (err, user) => {
+  
+  // Приводим новый логин к нижнему регистру
+  const normalizedNewLogin = newLogin.toLowerCase();
+  
+  db.get("SELECT * FROM users WHERE LOWER(username) = ?", [normalizedNewLogin], (err, user) => {
     if (user) return res.status(400).json({ message: "Login taken" });
     db.run(
       "UPDATE users SET username = ? WHERE id = ?",
-      [newLogin, req.user.id],
+      [normalizedNewLogin, req.user.id],
       function (err) {
         if (err) return res.status(500).json({ message: "DB error" });
         res.json({ success: true });
