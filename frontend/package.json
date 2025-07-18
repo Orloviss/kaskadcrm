@@ -15,11 +15,11 @@
     "cors": "^2.8.5",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
-    "node-sass": "^7.0.3",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-router-dom": "^7.7.0",
     "react-scripts": "^5.0.1",
+    "sass": "^1.89.2",
     "sqlite3": "^5.1.7"
   },
   "browserslist": {
