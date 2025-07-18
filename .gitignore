@@ -1,0 +1,37 @@
+# Node
+node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+build/
+dist/
+
+# SQLite DB
+*.db
+*.sqlite
+
+# Env
+.env
+.env.*
+
+# Editor
+.vscode/
+.idea/
+
+# Cache
+.cache/
+.next/
+
+# Coverage
+coverage/
+
+# Misc
+uploads/ 

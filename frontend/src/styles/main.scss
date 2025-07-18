@@ -1,0 +1,477 @@
+@import url("https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap");
+
+$blue: #003f4b;
+$gray: #f7f7f7;
+$black: #000;
+$white: #fff;
+$green: #4caf50;
+$red: #d32f2f;
+
+body {
+  margin: 0;
+  font-family: "Montserrat", sans-serif;
+  background: $gray;
+}
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+span,
+a,
+button,
+input,
+label,
+textarea {
+  font-family: "Montserrat", sans-serif;
+}
+a,
+h1,
+h2,
+h3,
+h4,
+h5 {
+  color: $blue;
+  margin: 0;
+}
+.crm-wrapper {
+  max-width: 48rem;
+  margin: 0 auto;
+  min-height: 100vh;
+  background: $white;
+  display: flex;
+  flex-direction: column;
+}
+.crm-header {
+  color: $white;
+  padding: 0.625rem 0;
+  text-align: center;
+  width: 100%;
+  display: flex;
+  justify-content: flex-start;
+}
+.crm-logo {
+  img {
+    width: 40vw;
+    object-fit: cover;
+  }
+}
+.crm-wrapper {
+  justify-content: center;
+  align-items: center;
+  padding: 0 1rem;
+}
+.auth-container {
+  margin: 1rem auto;
+  width: -webkit-fill-available;
+  background: $white;
+  padding: 1rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 0.125rem 0.75rem rgba(0, 0, 0, 0.07);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  .custom-select {
+    margin-bottom: 1rem;
+  }
+  form {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+  }
+  input {
+    padding: 0.625rem;
+    border: 1px solid #ddd;
+    border-radius: 0.375rem;
+    margin-bottom: 0.75rem;
+    font-size: 1rem;
+  }
+  button {
+    background: $blue;
+    color: $white;
+    border: none;
+    border-radius: 0.375rem;
+    padding: 0.625rem;
+    font-size: 1rem;
+    cursor: pointer;
+    margin-bottom: 0.5rem;
+  }
+}
+
+.auth-link {
+  text-align: center;
+  font-size: 0.95rem;
+}
+.error {
+  color: $red;
+  margin: 0.5rem 0;
+  text-align: center;
+}
+.main-container {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: -webkit-fill-available;
+  padding: 0;
+  align-items: center;
+  justify-content: center;
+  padding-bottom: 4.375rem;
+}
+.balance-block {
+  margin: 2rem 0 1rem 0;
+  font-size: 1.3rem;
+  font-weight: 500;
+}
+.funds-actions {
+  display: flex;
+  gap: 0.625rem;
+  margin-bottom: 1rem;
+  flex-direction: column;
+}
+.funds-actions input {
+  width: 6.25rem;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  border: 1px solid #ddd;
+}
+
+.add-btn {
+  background: $green;
+  color: $white;
+  border: none;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  cursor: pointer;
+}
+.remove-btn {
+  background: $red;
+  color: $white;
+  border: none;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  cursor: pointer;
+}
+.bottom-bar {
+  position: fixed;
+  left: 0;
+  bottom: 0;
+  width: 100vw;
+  max-width: 48rem;
+  background: $white;
+  border-top: 1px solid #eee;
+  display: flex;
+  justify-content: space-around;
+  padding: 0.625rem 0;
+  z-index: 10;
+}
+.bottom-bar button {
+  background: none;
+  border: none;
+  font-size: 1.1rem;
+  color: #888;
+  padding: 0.375rem 0.75rem;
+  border-radius: 0.375rem;
+  cursor: pointer;
+}
+.bottom-bar button {
+  font-size: 0.8rem;
+  padding: 0.2rem;
+}
+.bottom-bar .active {
+  color: #222;
+  background: #f0f0f0;
+}
+.add-btn,
+.remove-btn {
+  width: 15.625rem;
+  padding: 2rem;
+  font-size: 1.2rem;
+}
+@media (max-width: 768px) {
+}
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+.modal {
+  background: $white;
+  border-radius: 0.75rem;
+  padding: 1.5rem 1.25rem;
+  min-width: 18.75rem;
+  box-shadow: 0 0.125rem 1rem rgba(0, 0, 0, 0.15);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+.modal label {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+.modal input,
+.modal select {
+  margin-top: 0.25rem;
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+}
+.modal-actions {
+  display: flex;
+  gap: 0.625rem;
+  margin-top: 0.625rem;
+}
+.success {
+  color: #388e3c;
+  text-align: center;
+}
+.dot-income,
+.dot-expense {
+  display: inline-block;
+  width: 0.625rem;
+  height: 0.625rem;
+  border-radius: 50%;
+  margin-right: 0.5rem;
+}
+.dot-income {
+  background: $green;
+}
+.dot-expense {
+  background: $red;
+}
+.orders-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.625rem;
+  margin: 1rem 0;
+  justify-content: center;
+}
+.orders-filters label {
+  font-size: 0.95rem;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+.logout-btn {
+  background: #eee;
+  color: $red;
+  border: none;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-left: 0.5rem;
+}
+.modal-backdrop .modal img {
+  cursor: pointer;
+}
+.stats-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem 0.75rem 0 0.75rem;
+}
+.stats-logo {
+  display: flex;
+  align-items: center;
+  font-size: 1.2rem;
+  font-weight: bold;
+}
+.stats-balance {
+  font-size: 1.1rem;
+  color: #222;
+  background: #e8f5e9;
+  border-radius: 0.5rem;
+  padding: 0.375rem 1rem;
+  margin-left: 0.75rem;
+}
+.stats-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.75rem;
+  gap: 0.75rem;
+}
+.filters-btn {
+  background: $blue;
+  color: $white;
+  border: none;
+  border-radius: 0.375rem;
+  padding: 0.5rem 1.125rem;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.filters-btn:hover {
+  background: #388e3c;
+}
+.orders-filters-drawer {
+  position: fixed;
+  top: 0;
+  right: -20rem;
+  width: 20rem;
+  height: 100vh;
+  background: $white;
+  box-shadow: -0.125rem 0 1rem rgba(0, 0, 0, 0.08);
+  z-index: 1200;
+  transition: right 0.3s;
+  padding: 1.5rem 1.25rem 1.25rem 1.25rem;
+  overflow-y: auto;
+}
+.filters-title {
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 1.125rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #888;
+  cursor: pointer;
+}
+.filters-block {
+  margin-bottom: 1.125rem;
+}
+.filters-label {
+  font-size: 1rem;
+  font-weight: 500;
+  margin-bottom: 0.375rem;
+}
+.filters-checkboxes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+.reset-btn {
+  background: #eee;
+  color: $red;
+  border: none;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-top: 0.625rem;
+  width: 100%;
+}
+.filters-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.15);
+  z-index: 1100;
+}
+@media (max-width: 600px) {
+  .orders-filters-drawer {
+    width: 100vw;
+    padding: 1.125rem 0.5rem 0.5rem 0.5rem;
+  }
+}
+.apply-btn {
+  background: $green;
+  color: $white;
+  border: none;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  cursor: pointer;
+  font-size: 1rem;
+  margin-top: 0.625rem;
+  width: 100%;
+}
+.sort-dir-btn {
+  background: #eee;
+  color: $blue;
+  border: none;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  cursor: pointer;
+  font-size: 1.2rem;
+  margin-left: 0.5rem;
+}
+.settings-page {
+  max-width: 30rem;
+  margin: 0 auto;
+  padding: 1.5rem 0 5rem 0;
+}
+.settings-section {
+  margin-bottom: 2rem;
+  background: #f8f8f8;
+  border-radius: 0.625rem;
+  padding: 1.125rem 1rem;
+}
+.cat-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 0.625rem;
+}
+.cat-item {
+  background: #e8f5e9;
+  color: #222;
+  border-radius: 0.375rem;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.98rem;
+  display: flex;
+  align-items: center;
+}
+.cat-item button {
+  background: none;
+  border: none;
+  color: $red;
+  font-size: 1.1rem;
+  margin-left: 0.25rem;
+  cursor: pointer;
+}
+.settings-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.625rem;
+  margin-top: 0.5rem;
+}
+.settings-form input {
+  padding: 0.5rem;
+  border-radius: 0.375rem;
+  border: 1px solid #ddd;
+  font-size: 1rem;
+}
+.settings-form button {
+  background: $green;
+  color: $white;
+  border: none;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  cursor: pointer;
+  font-size: 1rem;
+}
+.settings-message {
+  color: #388e3c;
+  margin: 0.75rem 0;
+  text-align: center;
+}
+.settings-btn {
+  background: #eee;
+  color: #222;
+  border: none;
+  border-radius: 0.375rem;
+  padding: 0.5rem 0.875rem;
+  cursor: pointer;
+  font-size: 1.1rem;
+  margin-left: 0.5rem;
+}
