@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { API_BASE_URL } from '../config';
+const { API_BASE_URL } = require('../config');
 
 function TransactionModal({ type, onClose }) {
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));

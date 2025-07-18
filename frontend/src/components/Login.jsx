@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { API_BASE_URL } from '../config';
+const { API_BASE_URL } = require('../config');
 
 function Login() {
   const [username, setUsername] = useState('');

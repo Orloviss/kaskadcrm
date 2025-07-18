@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import CustomSelect from './CustomSelect';
 import './CustomSelect.scss';
-import { API_BASE_URL } from '../config';
+const { API_BASE_URL } = require('../config');
 
 const roleOptions = [
   { value: 'admin', label: 'Админ' },

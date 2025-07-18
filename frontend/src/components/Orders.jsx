@@ -4,7 +4,7 @@ import CustomCheckbox from './CustomCheckbox';
 import CustomSelect from './CustomSelect';
 import './CustomCheckbox.scss';
 import './CustomSelect.scss';
-import { API_BASE_URL, UPLOADS_BASE_URL } from '../config';
+const { API_BASE_URL, UPLOADS_BASE_URL } = require('../config');
 
 const categories = [
   'Мебель',

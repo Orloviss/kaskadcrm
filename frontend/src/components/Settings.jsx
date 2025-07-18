@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './Settings.scss';
-import { API_BASE_URL } from '../config';
+const { API_BASE_URL } = require('../config');
 
 function Settings() {
   const [incomeCategories, setIncomeCategories] = useState([]);
