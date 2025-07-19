@@ -7,6 +7,9 @@ $black: #000;
 $white: #fff;
 $green: #4caf50;
 $red: #d32f2f;
+html, body {
+  overflow: hidden;
+}
 
 body {
   margin: 0;
@@ -57,7 +60,7 @@ body {
     text-align: center;
     width: 100%;
     display: flex;
-    justify-content: flex-start;
+    justify-content: space-between;
   }
 
   .crm-logo {
@@ -583,6 +586,10 @@ button.logout-btn {
 }
 .crm-header {
   margin-bottom: 1rem;
+}
+.order-items, .settings-page {
+  overflow-y: scroll;
+  height: 76vh;
 }
 @media (max-width: 768px) {
   .orders-filters-drawer {
