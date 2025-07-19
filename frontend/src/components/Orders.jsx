@@ -57,6 +57,8 @@ function Orders({ setStatsBalance }) {
     types: [],
     sort: 'date_desc'
   });
+  const [incomeCategories, setIncomeCategories] = useState([]);
+  const [expenseCategories, setExpenseCategories] = useState([]);
 
   // Собираем список пользователей из транзакций
   const users = useMemo(() => {
@@ -76,6 +78,18 @@ function Orders({ setStatsBalance }) {
         .then(data => setTransactions(data.transactions || []));
     }
   }, [location.pathname]);
+
+  // Подгружаем категории с сервера
+  useEffect(() => {
+    fetch(`${API_BASE_URL}/funds/categories`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        setIncomeCategories((data.categories || []).filter(c => c.type === 'income').map(c => c.name));
+        setExpenseCategories((data.categories || []).filter(c => c.type === 'expense').map(c => c.name));
+      });
+  }, []);
 
   // Фильтрация и сортировка
   const filtered = transactions
@@ -146,9 +160,31 @@ function Orders({ setStatsBalance }) {
           <div className="filters-title">Фильтры <button className="close-btn" onClick={() => setShowFilters(false)}>×</button></div>
           {/* Категории */}
           <div className="filters-block">
-            <div className="filters-label">Категории</div>
+            <div className="filters-label">Категории доходов</div>
             <div className="filters-checkboxes">
-              {categories.map(cat => (
+              {incomeCategories.map(cat => (
+                <CustomCheckbox
+                  key={cat}
+                  label={cat}
+                  value={cat}
+                  checked={pendingFilters.categories.includes(cat)}
+                  onChange={e => {
+                    const val = e.target.value;
+                    setPendingFilters(f => ({
+                      ...f,
+                      categories: f.categories.includes(val)
+                        ? f.categories.filter(c => c !== val)
+                        : [...f.categories, val]
+                    }));
+                  }}
+                />
+              ))}
+            </div>
+          </div>
+          <div className="filters-block">
+            <div className="filters-label">Категории расходов</div>
+            <div className="filters-checkboxes">
+              {expenseCategories.map(cat => (
                 <CustomCheckbox
                   key={cat}
                   label={cat}
@@ -217,23 +253,34 @@ function Orders({ setStatsBalance }) {
           <div className="filters-block">
             <div className="filters-label">Тип</div>
             <div className="filters-checkboxes">
-              {typeOptions.map(t => (
-                <CustomCheckbox
-                  key={t.value}
-                  label={t.label}
-                  value={t.value}
-                  checked={pendingFilters.types && pendingFilters.types.includes(t.value)}
-                  onChange={e => {
-                    const val = e.target.value;
-                    setPendingFilters(f => ({
-                      ...f,
-                      types: f.types && f.types.includes(val)
-                        ? f.types.filter(c => c !== val)
-                        : [...(f.types || []), val]
-                    }));
-                  }}
-                />
-              ))}
+              <CustomCheckbox
+                label="Доход"
+                value="add"
+                checked={pendingFilters.types && pendingFilters.types.includes('add')}
+                onChange={e => {
+                  const val = e.target.value;
+                  setPendingFilters(f => ({
+                    ...f,
+                    types: f.types && f.types.includes(val)
+                      ? f.types.filter(c => c !== val)
+                      : [...(f.types || []), val]
+                  }));
+                }}
+              />
+              <CustomCheckbox
+                label="Расход"
+                value="remove"
+                checked={pendingFilters.types && pendingFilters.types.includes('remove')}
+                onChange={e => {
+                  const val = e.target.value;
+                  setPendingFilters(f => ({
+                    ...f,
+                    types: f.types && f.types.includes(val)
+                      ? f.types.filter(c => c !== val)
+                      : [...(f.types || []), val]
+                  }));
+                }}
+              />
             </div>
           </div>
           {/* Дата */}

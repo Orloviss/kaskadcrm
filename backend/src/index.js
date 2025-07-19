@@ -14,7 +14,7 @@ app.use(express.json());
 // Настройка multer для загрузки файлов в uploads на уровень выше backend/src
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    const uploadPath = path.join(__dirname, '../uploads/');
+    const uploadPath = path.join(__dirname, '../../uploads/');
     console.log('Multer destination:', uploadPath);
     cb(null, uploadPath);
   },
