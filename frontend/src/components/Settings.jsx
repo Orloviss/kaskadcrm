@@ -125,6 +125,15 @@ function Settings() {
     localStorage.removeItem('token');
     window.location = '/login';
   };
+  const handleDeleteUser = async () => {
+    if (!window.confirm('Удалить пользователя и все его данные?')) return;
+    await fetch(`${API_BASE_URL}/auth/delete`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+    localStorage.removeItem('token');
+    window.location.reload();
+  };
 
   return (
     <div className="settings-page">
@@ -169,6 +178,7 @@ function Settings() {
       {error && <div className="error">{error}</div>}
       <div style={{marginTop: 32, marginBottom: 80}}>
         <button className="logout-btn" onClick={handleLogout}>Выйти</button>
+        <button onClick={handleDeleteUser} style={{marginTop: 24, background: '#e74c3c', color: '#fff'}}>Удалить пользователя</button>
       </div>
     </div>
   );

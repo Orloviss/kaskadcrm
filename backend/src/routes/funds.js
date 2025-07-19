@@ -96,4 +96,12 @@ router.delete('/categories/:id', authMiddleware, (req, res) => {
   });
 });
 
+router.delete('/delete/:id', authMiddleware, (req, res) => {
+  const id = req.params.id;
+  db.run('DELETE FROM funds WHERE id = ?', [id], function(err) {
+    if (err) return res.status(500).json({ message: 'DB error' });
+    res.json({ success: true });
+  });
+});
+
 module.exports = router; 

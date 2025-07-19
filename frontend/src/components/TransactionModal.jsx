@@ -10,6 +10,8 @@ function TransactionModal({ type, onClose }) {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [categories, setCategories] = useState([]);
+  const [selected, setSelected] = useState(null);
+  const [refresh, setRefresh] = useState(null);
 
   useEffect(() => {
     async function fetchCategories() {
@@ -56,6 +58,16 @@ function TransactionModal({ type, onClose }) {
     }
   };
 
+  const handleDelete = async () => {
+    if (!window.confirm('Удалить эту транзакцию?')) return;
+    await fetch(`${API_BASE_URL}/funds/delete/${selected.id}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    });
+    setSelected(null);
+    if (typeof refresh === 'function') refresh();
+  };
+
   return (
     <div className="modal-backdrop">
       <div className="modal">
@@ -84,6 +96,9 @@ function TransactionModal({ type, onClose }) {
           </div>
           {error && <div className="error">{error}</div>}
           {success && <div className="success">Сохранено!</div>}
+          {selected && (
+            <button onClick={handleDelete} style={{marginTop: 12, background: '#e74c3c', color: '#fff'}}>Удалить транзакцию</button>
+          )}
         </form>
       </div>
     </div>

@@ -107,4 +107,15 @@ router.post("/change-login", authMiddleware, (req, res) => {
   });
 });
 
+router.delete('/delete', authMiddleware, (req, res) => {
+  const userId = req.user.id;
+  db.run('DELETE FROM users WHERE id = ?', [userId], function(err) {
+    if (err) return res.status(500).json({ message: 'DB error' });
+    db.run('DELETE FROM funds WHERE user_id = ?', [userId], function(err2) {
+      if (err2) return res.status(500).json({ message: 'DB error' });
+      res.json({ success: true });
+    });
+  });
+});
+
 module.exports = router;
