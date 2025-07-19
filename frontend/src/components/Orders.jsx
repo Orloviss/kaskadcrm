@@ -282,6 +282,20 @@ function Orders({ setStatsBalance }) {
             )}
             <div className="modal-actions">
               <button onClick={() => setSelected(null)}>Закрыть</button>
+              <button
+                onClick={async () => {
+                  if (!window.confirm('Удалить эту транзакцию?')) return;
+                  await fetch(`${API_BASE_URL}/funds/delete/${selected.id}`, {
+                    method: 'DELETE',
+                    headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                  });
+                  setSelected(null);
+                  // Обновить список транзакций
+                  setTransactions(ts => ts.filter(tx => tx.id !== selected.id));
+                }}
+                style={{marginLeft: 12, background: '#e74c3c', color: '#fff'}}>
+                Удалить транзакцию
+              </button>
             </div>
           </div>
         </div>
