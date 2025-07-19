@@ -590,6 +590,7 @@ button.logout-btn {
 .order-items, .settings-page {
   overflow-y: scroll;
   height: 76vh;
+  width: 100%;
 }
 @media (max-width: 768px) {
   .orders-filters-drawer {
