@@ -15,9 +15,7 @@ function Settings() {
   // Загрузка категорий с backend
   const fetchCategories = async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/funds/categories`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      });
+      const res = await fetch(`${API_BASE_URL}/funds/categories`, { credentials: 'include' });
       const data = await res.json();
       if (res.ok) {
         setIncomeCategories(data.categories.filter(c => c.type === 'income'));
@@ -33,9 +31,9 @@ function Settings() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({ name: newIncomeCat, type: 'income' })
+        body: JSON.stringify({ name: newIncomeCat, type: 'income' }),
+        credentials: 'include',
       });
       setNewIncomeCat('');
       fetchCategories();
@@ -47,9 +45,9 @@ function Settings() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({ name: newExpenseCat, type: 'expense' })
+        body: JSON.stringify({ name: newExpenseCat, type: 'expense' }),
+        credentials: 'include',
       });
       setNewExpenseCat('');
       fetchCategories();
@@ -58,14 +56,14 @@ function Settings() {
   const handleRemoveIncomeCat = async (cat) => {
     await fetch(`${API_BASE_URL}/funds/categories/${cat.id}`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      credentials: 'include',
     });
     fetchCategories();
   };
   const handleRemoveExpenseCat = async (cat) => {
     await fetch(`${API_BASE_URL}/funds/categories/${cat.id}`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      credentials: 'include',
     });
     fetchCategories();
   };
@@ -82,9 +80,9 @@ function Settings() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({ oldPassword: passwords.old, newPassword: passwords.new1 })
+        body: JSON.stringify({ oldPassword: passwords.old, newPassword: passwords.new1 }),
+        credentials: 'include',
       });
       const data = await res.json();
       if (res.ok) {
@@ -106,9 +104,9 @@ function Settings() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify({ newLogin: login })
+        body: JSON.stringify({ newLogin: login }),
+        credentials: 'include',
       });
       const data = await res.json();
       if (res.ok) {
@@ -121,17 +119,19 @@ function Settings() {
       setError('Ошибка сервера');
     }
   };
-  const handleLogout = () => {
-    localStorage.removeItem('token');
+  const handleLogout = async () => {
+    await fetch(`${API_BASE_URL}/auth/logout`, {
+      method: 'POST',
+      credentials: 'include',
+    });
     window.location = '/login';
   };
   const handleDeleteUser = async () => {
     if (!window.confirm('Удалить пользователя и все его данные?')) return;
     await fetch(`${API_BASE_URL}/auth/delete`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      credentials: 'include',
     });
-    localStorage.removeItem('token');
     window.location.reload();
   };
 

@@ -3,13 +3,15 @@ const cors = require('cors');
 const multer = require('multer');
 const path = require('path');
 const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 const authRoutes = require('./routes/auth');
 const fundsRoutes = require('./routes/funds');
 const db = require('./db');
 
 const app = express();
-app.use(cors());
+app.use(cors({ origin: true, credentials: true }));
 app.use(express.json());
+app.use(cookieParser());
 
 // Настройка multer для загрузки файлов в uploads на уровень выше backend/src
 const storage = multer.diskStorage({

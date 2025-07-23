@@ -62,7 +62,7 @@ function OrdersHistory({ transactions, setTransactions }) {
 
   useEffect(() => {
     fetch(`${API_BASE_URL}/funds/categories`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      credentials: 'include'
     })
       .then(res => res.json())
       .then(data => {
@@ -262,7 +262,7 @@ function OrdersHistory({ transactions, setTransactions }) {
                     if (!window.confirm('Удалить эту транзакцию?')) return;
                     await fetch(`${API_BASE_URL}/funds/delete/${selected.id}`, {
                       method: 'DELETE',
-                      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+                      credentials: 'include'
                     });
                     setSelected(null);
                     // Обновить список транзакций
@@ -295,5 +295,5 @@ function OrdersStub() {
   );
 }
 
-// Экспорт по умолчанию — всегда OrdersHistory
+// Экспорт по умолчанию — всегда OrdersHistory (для вкладки Финансы)
 export default OrdersHistory; 

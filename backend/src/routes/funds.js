@@ -17,9 +17,8 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 function authMiddleware(req, res, next) {
-  const auth = req.headers.authorization;
-  if (!auth) return res.status(401).json({ message: 'No token' });
-  const token = auth.split(' ')[1];
+  const token = req.cookies.token;
+  if (!token) return res.status(401).json({ message: 'No token' });
   jwt.verify(token, JWT_SECRET, (err, decoded) => {
     if (err) return res.status(401).json({ message: 'Invalid token' });
     req.user = decoded;

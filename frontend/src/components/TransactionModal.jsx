@@ -18,7 +18,7 @@ function TransactionModal({ type, onClose, transactions, setTransactions }) {
     async function fetchCategories() {
       try {
         const res = await fetch(`${API_BASE_URL}/funds/categories`, {
-          headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+          credentials: 'include'
         });
         const data = await res.json();
         if (res.ok) {
@@ -45,7 +45,7 @@ function TransactionModal({ type, onClose, transactions, setTransactions }) {
     try {
       const res = await fetch(`${API_BASE_URL}/funds/add`, {
         method: 'POST',
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
+        credentials: 'include',
         body: formData
       });
       const data = await res.json();
@@ -73,7 +73,7 @@ function TransactionModal({ type, onClose, transactions, setTransactions }) {
     if (!window.confirm('Удалить эту транзакцию?')) return;
     await fetch(`${API_BASE_URL}/funds/delete/${selected.id}`, {
       method: 'DELETE',
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+      credentials: 'include'
     });
     setSelected(null);
     if (typeof refresh === 'function') refresh();

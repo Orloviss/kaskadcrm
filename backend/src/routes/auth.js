@@ -7,9 +7,8 @@ const router = express.Router();
 const JWT_SECRET = "your_jwt_secret"; // Change in production
 
 const authMiddleware = (req, res, next) => {
-  const auth = req.headers.authorization;
-  if (!auth) return res.status(401).json({ message: "No token" });
-  const token = auth.split(" ")[1];
+  const token = req.cookies.token;
+  if (!token) return res.status(401).json({ message: "No token" });
   jwt.verify(token, JWT_SECRET, (err, decoded) => {
     if (err) return res.status(401).json({ message: "Invalid token" });
     req.user = decoded;
@@ -41,7 +40,13 @@ router.post("/register", (req, res) => {
           JWT_SECRET,
           { expiresIn: "7d" }
         );
-        res.json({ token });
+        res.cookie('token', token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === 'production',
+          sameSite: 'lax',
+          maxAge: 30 * 24 * 60 * 60 * 1000 // 30 дней
+        });
+        res.json({ role: role || "admin" });
       }
     );
   });
@@ -62,7 +67,13 @@ router.post("/login", (req, res) => {
       JWT_SECRET,
       { expiresIn: "7d" }
     );
-    res.json({ token });
+    res.cookie('token', token, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 30 * 24 * 60 * 60 * 1000 // 30 дней
+    });
+    res.json({ role: user.role });
   });
 });
 
@@ -105,6 +116,17 @@ router.post("/change-login", authMiddleware, (req, res) => {
       }
     );
   });
+});
+
+// Проверка авторизации
+router.get('/me', authMiddleware, (req, res) => {
+  res.json({ user: req.user });
+});
+
+// Выход
+router.post('/logout', (req, res) => {
+  res.clearCookie('token');
+  res.json({ message: 'Logged out' });
 });
 
 router.delete('/delete', authMiddleware, (req, res) => {

@@ -58,16 +58,22 @@ function AppRoutes({ isAuth, totalIncome, totalExpense, transactions, setTransac
 }
 
 function App() {
-  const [isAuth, setIsAuth] = useState(!!localStorage.getItem('token'));
+  const [isAuth, setIsAuth] = useState(false);
   const [transactions, setTransactions] = useState([]);
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpense, setTotalExpense] = useState(0);
 
+  // Проверка авторизации через cookie
   useEffect(() => {
-    if (!localStorage.getItem('token')) return;
-    fetch(`${API_BASE_URL}/funds/all`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    })
+    fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include' })
+      .then(res => res.ok ? res.json() : Promise.reject())
+      .then(() => setIsAuth(true))
+      .catch(() => setIsAuth(false));
+  }, []);
+
+  useEffect(() => {
+    if (!isAuth) return;
+    fetch(`${API_BASE_URL}/funds/all`, { credentials: 'include' })
       .then(res => res.json())
       .then(data => {
         setTransactions(data.transactions || []);
@@ -83,21 +89,6 @@ function App() {
     setTotalIncome(income);
     setTotalExpense(expense);
   }, [transactions]);
-
-  useEffect(() => {
-    const onStorage = () => setIsAuth(!!localStorage.getItem('token'));
-    window.addEventListener('storage', onStorage);
-    return () => window.removeEventListener('storage', onStorage);
-  }, []);
-
-  useEffect(() => {
-    const origSetItem = localStorage.setItem;
-    localStorage.setItem = function(key, value) {
-      origSetItem.apply(this, arguments);
-      if (key === 'token') setIsAuth(!!value);
-    };
-    return () => { localStorage.setItem = origSetItem; };
-  }, []);
 
   return (
     <Router>

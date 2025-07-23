@@ -15,12 +15,11 @@ function Login() {
       const res = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username, password }),
+        credentials: 'include',
       });
       const data = await res.json();
       if (res.ok) {
-        localStorage.setItem('token', data.token);
-        localStorage.setItem('role', data.role);
         navigate('/');
       } else {
         setError(data.message || 'Ошибка входа');

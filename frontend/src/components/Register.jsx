@@ -29,11 +29,11 @@ function Register() {
       const res = await fetch(`${API_BASE_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password, role, question })
+        body: JSON.stringify({ username, password, role, question }),
+        credentials: 'include',
       });
       const data = await res.json();
       if (res.ok) {
-        localStorage.setItem('token', data.token);
         navigate('/');
       } else {
         setError(data.message || 'Ошибка регистрации');
