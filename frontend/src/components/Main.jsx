@@ -8,7 +8,7 @@ const categories = [
   'оплата налога'
 ];
 
-function Main({ activeTab, setActiveTab }) {
+function Main({ activeTab, setActiveTab, transactions, setTransactions }) {
   const [modalType, setModalType] = useState(null); // 'income' | 'expense' | null
   const navigate = useNavigate();
 
@@ -24,6 +24,8 @@ function Main({ activeTab, setActiveTab }) {
           type={modalType}
           categories={categories}
           onClose={() => setModalType(null)}
+          transactions={transactions}
+          setTransactions={setTransactions}
         />
       )}
       {/* nav.bottom-bar удалён, теперь глобальный */}

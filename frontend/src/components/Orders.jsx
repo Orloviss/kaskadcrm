@@ -27,25 +27,26 @@ const typeOptions = [
 ];
 
 // Новый компонент для истории
-function OrdersHistory({ setStatsBalance }) {
-  const [transactions, setTransactions] = useState([]);
+function OrdersHistory({ transactions, setTransactions }) {
   const [selected, setSelected] = useState(null);
   const [lightbox, setLightbox] = useState(null);
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState({
     dateFrom: '',
     dateTo: '',
-    categories: [],
-    roles: [],
-    users: [],
+    incomeCategory: '',
+    expenseCategory: '',
+    role: '',
+    user: '',
     sort: 'date_desc'
   });
   const [pendingFilters, setPendingFilters] = useState({
     dateFrom: '',
     dateTo: '',
-    categories: [],
-    roles: [],
-    users: [],
+    incomeCategory: '',
+    expenseCategory: '',
+    role: '',
+    user: '',
     sort: 'date_desc'
   });
   const [incomeCategories, setIncomeCategories] = useState([]);
@@ -58,14 +59,6 @@ function OrdersHistory({ setStatsBalance }) {
     });
     return Object.keys(map);
   }, [transactions]);
-
-  useEffect(() => {
-    fetch(`${API_BASE_URL}/funds/all`, {
-      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-    })
-      .then(res => res.json())
-      .then(data => setTransactions(data.transactions || []));
-  }, []);
 
   useEffect(() => {
     fetch(`${API_BASE_URL}/funds/categories`, {
@@ -83,9 +76,10 @@ function OrdersHistory({ setStatsBalance }) {
       if (tx.type !== activeTypeTab) return false;
       if (pendingFilters.dateFrom && tx.date < pendingFilters.dateFrom) return false;
       if (pendingFilters.dateTo && tx.date > pendingFilters.dateTo) return false;
-      if (pendingFilters.categories.length && !pendingFilters.categories.includes(tx.category)) return false;
-      if (pendingFilters.roles.length && !pendingFilters.roles.includes(tx.role)) return false;
-      if (pendingFilters.users.length && !pendingFilters.users.includes(tx.username)) return false;
+      if (pendingFilters.incomeCategory && tx.type === 'add' && tx.category !== pendingFilters.incomeCategory) return false;
+      if (pendingFilters.expenseCategory && tx.type === 'remove' && tx.category !== pendingFilters.expenseCategory) return false;
+      if (pendingFilters.role && tx.role !== pendingFilters.role) return false;
+      if (pendingFilters.user && tx.username !== pendingFilters.user) return false;
       return true;
     })
     .sort((a, b) => {
@@ -103,15 +97,8 @@ function OrdersHistory({ setStatsBalance }) {
       }
     });
 
-  const balance = filtered.reduce((sum, tx) => {
-    if (tx.type === 'add') return sum + Number(tx.amount);
-    if (tx.type === 'remove') return sum - Number(tx.amount);
-    return sum;
-  }, 0);
-
-  useEffect(() => {
-    if (setStatsBalance) setStatsBalance(balance);
-  }, [balance, setStatsBalance]);
+  // Общая сумма по фильтру и вкладке
+  const totalFiltered = filtered.reduce((sum, tx) => sum + Number(tx.amount), 0);
 
   const openFilters = () => {
     setPendingFilters(filters);
@@ -120,9 +107,10 @@ function OrdersHistory({ setStatsBalance }) {
   const resetPendingFilters = () => setPendingFilters({
     dateFrom: '',
     dateTo: '',
-    categories: [],
-    roles: [],
-    users: [],
+    incomeCategory: '',
+    expenseCategory: '',
+    role: '',
+    user: '',
     sort: 'date_desc'
   });
 
@@ -154,99 +142,48 @@ function OrdersHistory({ setStatsBalance }) {
             <button className={activeTypeTab==='add'? 'active' : ''} style={{padding:'0.5rem 1.2rem',border:'none',background:activeTypeTab==='add'?'#4caf50':'rgb(225 225 225)',color:activeTypeTab==='add'?'#fff':'#333',fontWeight:600,cursor:'pointer'}} onClick={()=>setActiveTypeTab('add')}>Доход</button>
             <button className={activeTypeTab==='remove'? 'active' : ''} style={{padding:'0.5rem 1.2rem',border:'none',background:activeTypeTab==='remove'?'#d32f2f':'rgb(225 225 225)',color:activeTypeTab==='remove'?'#fff':'#333',fontWeight:600,cursor:'pointer'}} onClick={()=>setActiveTypeTab('remove')}>Расход</button>
           </div>
+          {/* Общая сумма по фильтру и вкладке */}
+          <div style={{marginBottom:8, marginTop:8, fontWeight:600, fontSize:'1.3rem', textAlign: 'center', color:'#333'}}>
+            Всего: {totalFiltered} ₽
+          </div>
         </div>
         <div className="orders-filters-drawer" style={{right: showFilters ? 0 : '-120vw'}}>
           <div className="filters-title">Фильтры <button className="close-btn" onClick={() => setShowFilters(false)}>×</button></div>
-          {/* Категории */}
+          {/* Категории доходов */}
           <div className="filters-block">
-            <div className="filters-label">Категории доходов</div>
-            <div className="filters-checkboxes">
-              {incomeCategories.map(cat => (
-                <CustomCheckbox
-                  key={cat}
-                  label={cat}
-                  value={cat}
-                  checked={pendingFilters.categories.includes(cat)}
-                  onChange={e => {
-                    const val = e.target.value;
-                    setPendingFilters(f => ({
-                      ...f,
-                      categories: f.categories.includes(val)
-                        ? f.categories.filter(c => c !== val)
-                        : [...f.categories, val]
-                    }));
-                  }}
-                />
-              ))}
-            </div>
+            <div className="filters-label">Категория дохода</div>
+            <CustomSelect
+              options={incomeCategories.map(cat => ({ value: cat, label: cat }))}
+              value={pendingFilters.incomeCategory}
+              onChange={val => setPendingFilters(f => ({ ...f, incomeCategory: val }))}
+            />
           </div>
+          {/* Категории расходов */}
           <div className="filters-block">
-            <div className="filters-label">Категории расходов</div>
-            <div className="filters-checkboxes">
-              {expenseCategories.map(cat => (
-                <CustomCheckbox
-                  key={cat}
-                  label={cat}
-                  value={cat}
-                  checked={pendingFilters.categories.includes(cat)}
-                  onChange={e => {
-                    const val = e.target.value;
-                    setPendingFilters(f => ({
-                      ...f,
-                      categories: f.categories.includes(val)
-                        ? f.categories.filter(c => c !== val)
-                        : [...f.categories, val]
-                    }));
-                  }}
-                />
-              ))}
-            </div>
+            <div className="filters-label">Категория расхода</div>
+            <CustomSelect
+              options={expenseCategories.map(cat => ({ value: cat, label: cat }))}
+              value={pendingFilters.expenseCategory}
+              onChange={val => setPendingFilters(f => ({ ...f, expenseCategory: val }))}
+            />
           </div>
           {/* Роли */}
           <div className="filters-block">
-            <div className="filters-label">Роли</div>
-            <div className="filters-checkboxes">
-              {roles.map(r => (
-                <CustomCheckbox
-                  key={r.value}
-                  label={r.label}
-                  value={r.value}
-                  checked={pendingFilters.roles.includes(r.value)}
-                  onChange={e => {
-                    const val = e.target.value;
-                    setPendingFilters(f => ({
-                      ...f,
-                      roles: f.roles.includes(val)
-                        ? f.roles.filter(c => c !== val)
-                        : [...f.roles, val]
-                    }));
-                  }}
-                />
-              ))}
-            </div>
+            <div className="filters-label">Роль</div>
+            <CustomSelect
+              options={roles}
+              value={pendingFilters.role}
+              onChange={val => setPendingFilters(f => ({ ...f, role: val }))}
+            />
           </div>
           {/* Пользователи */}
           <div className="filters-block">
-            <div className="filters-label">Пользователи</div>
-            <div className="filters-checkboxes">
-              {users.map(u => (
-                <CustomCheckbox
-                  key={u}
-                  label={u}
-                  value={u}
-                  checked={pendingFilters.users.includes(u)}
-                  onChange={e => {
-                    const val = e.target.value;
-                    setPendingFilters(f => ({
-                      ...f,
-                      users: f.users.includes(val)
-                        ? f.users.filter(c => c !== val)
-                        : [...f.users, val]
-                    }));
-                  }}
-                />
-              ))}
-            </div>
+            <div className="filters-label">Пользователь</div>
+            <CustomSelect
+              options={users.map(u => ({ value: u, label: u }))}
+              value={pendingFilters.user}
+              onChange={val => setPendingFilters(f => ({ ...f, user: val }))}
+            />
           </div>
           {/* Дата */}
           <div className="filters-block">
@@ -358,13 +295,5 @@ function OrdersStub() {
   );
 }
 
-// Экспорт по умолчанию — универсальный компонент-обёртка
-function Orders(props) {
-  if (props.setStatsBalance) {
-    return <OrdersHistory {...props} />;
-  } else {
-    return <OrdersStub />;
-  }
-}
-
-export default Orders; 
+// Экспорт по умолчанию — всегда OrdersHistory
+export default OrdersHistory; 

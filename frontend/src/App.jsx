@@ -7,6 +7,7 @@ import Orders from './components/Orders';
 import Settings from './components/Settings';
 import Header from './components/Header';
 import './styles/main.scss';
+const { API_BASE_URL } = require('./config');
 
 function BottomBar({ activeTab }) {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ function BottomBar({ activeTab }) {
   );
 }
 
-function AppRoutes({ isAuth, statsBalance, setStatsBalance }) {
+function AppRoutes({ isAuth, totalIncome, totalExpense, transactions, setTransactions }) {
   const location = useLocation();
   let activeTab = 'finances';
   if (location.pathname === '/history') activeTab = 'history';
@@ -43,11 +44,11 @@ function AppRoutes({ isAuth, statsBalance, setStatsBalance }) {
 
   return (
     <>
-      <Header balance={activeTab === 'history' ? statsBalance : undefined} />
+      <Header totalIncome={activeTab === 'history' ? totalIncome : undefined} totalExpense={activeTab === 'history' ? totalExpense : undefined} />
       <Routes>
-        <Route path="/" element={<Main />} />
-        <Route path="/history" element={<Orders setStatsBalance={setStatsBalance} />} />
-        <Route path="/orders" element={<Orders />} />
+        <Route path="/" element={<Main transactions={transactions} setTransactions={setTransactions} />} />
+        <Route path="/history" element={<Orders transactions={transactions} setTransactions={setTransactions} />} />
+        <Route path="/orders" element={<Orders transactions={transactions} setTransactions={setTransactions} />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
@@ -58,7 +59,30 @@ function AppRoutes({ isAuth, statsBalance, setStatsBalance }) {
 
 function App() {
   const [isAuth, setIsAuth] = useState(!!localStorage.getItem('token'));
-  const [statsBalance, setStatsBalance] = useState(null);
+  const [transactions, setTransactions] = useState([]);
+  const [totalIncome, setTotalIncome] = useState(0);
+  const [totalExpense, setTotalExpense] = useState(0);
+
+  useEffect(() => {
+    if (!localStorage.getItem('token')) return;
+    fetch(`${API_BASE_URL}/funds/all`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    })
+      .then(res => res.json())
+      .then(data => {
+        setTransactions(data.transactions || []);
+      });
+  }, [isAuth]);
+
+  useEffect(() => {
+    let income = 0, expense = 0;
+    transactions.forEach(tx => {
+      if (tx.type === 'add') income += Number(tx.amount);
+      if (tx.type === 'remove') expense += Number(tx.amount);
+    });
+    setTotalIncome(income);
+    setTotalExpense(expense);
+  }, [transactions]);
 
   useEffect(() => {
     const onStorage = () => setIsAuth(!!localStorage.getItem('token'));
@@ -78,7 +102,7 @@ function App() {
   return (
     <Router>
       <div className="crm-wrapper">
-        <AppRoutes isAuth={isAuth} statsBalance={statsBalance} setStatsBalance={setStatsBalance} />
+        <AppRoutes isAuth={isAuth} totalIncome={totalIncome} totalExpense={totalExpense} transactions={transactions} setTransactions={setTransactions} />
       </div>
     </Router>
   );

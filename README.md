@@ -28,3 +28,11 @@ npm install
 
 ## Deployment
 - Backend and frontend are decoupled, ready for VDS deployment and custom domain. 
+
+
+## Update
+cd /opt/kaskadcrm
+git pull
+cd backend && npm install && pm2 restart kaskad-backend
+cd ../frontend && npm install && npm run build
+systemctl reload nginx

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 const { API_BASE_URL } = require('../config');
 
-function TransactionModal({ type, onClose }) {
+function TransactionModal({ type, onClose, transactions, setTransactions }) {
   const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [category, setCategory] = useState('');
   const [amount, setAmount] = useState('');
@@ -48,11 +48,20 @@ function TransactionModal({ type, onClose }) {
         headers: { Authorization: `Bearer ${localStorage.getItem('token')}` },
         body: formData
       });
+      const data = await res.json();
       if (res.ok) {
         setSuccess(true);
+        // Добавить новую транзакцию в глобальный список
+        if (data.transaction) {
+          setTransactions([...transactions, data.transaction]);
+        } else {
+          // Если сервер не возвращает транзакцию, перезапросить все
+          setTransactions(ts => [...ts, {
+            amount, type: type === 'income' ? 'add' : 'remove', category, description, date, title, photo: null
+          }]);
+        }
         setTimeout(onClose, 1000);
       } else {
-        const data = await res.json();
         setError(data.message || 'Ошибка');
       }
     } catch {
