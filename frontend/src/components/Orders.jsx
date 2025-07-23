@@ -12,8 +12,8 @@ const categories = [
   'оплата налога'
 ];
 const roles = [
-  { value: 'admin', label: 'Админ' },
-  { value: 'designer', label: 'Дизайнер' }
+  { value: 'Админ', label: 'Админ' },
+  { value: 'Дизайнер', label: 'Дизайнер' }
 ];
 const sortOptions = [
   { value: 'date_desc', label: 'По дате: новые → старые' },
@@ -274,7 +274,7 @@ function OrdersHistory({ setStatsBalance }) {
             }, {})).map(([date, txs]) => {
               const daySum = txs.reduce((sum, tx) => tx.type === 'add' ? sum + Number(tx.amount) : sum - Number(tx.amount), 0);
               return (
-                <div key={date} style={{marginBottom: '1.5rem'}}>
+                <div key={date} style={{marginBottom: '0'}}>
                   <div className="date__row" style={{fontWeight: 600, fontSize: '1.1rem', margin: '0.5rem 0', display:'flex', alignItems:'center', gap:12}}>
                     {formatDateRu(date)}
                     <span style={{color:'#388e3c', fontWeight:500, fontSize:'1rem'}}> {daySum} ₽</span>

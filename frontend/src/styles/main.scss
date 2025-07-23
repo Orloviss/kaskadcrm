@@ -631,3 +631,13 @@ span.dot-income, span.dot-expense {
 .order-items > div > div > div.left__col > div:nth-child(3) {
   color: $blue !important;
 }
+.modal-backdrop .modal input, .modal-backdrop .modal select {
+  width: -webkit-fill-available;
+}
+.crm-wrapper:has(.auth-container) {
+  justify-content: center;
+  padding: 0 1rem;
+}
+.auth-container .custom-select__selected {
+  font-size: 1rem !important;
+}

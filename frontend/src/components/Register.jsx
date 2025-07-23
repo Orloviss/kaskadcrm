@@ -5,8 +5,8 @@ import './CustomSelect.scss';
 const { API_BASE_URL } = require('../config');
 
 const roleOptions = [
-  { value: 'admin', label: 'Админ' },
-  { value: 'designer', label: 'Дизайнер' }
+  { value: 'Админ', label: 'Админ' },
+  { value: 'Дизайнер', label: 'Дизайнер' }
 ];
 const SECRET_ANSWER = '$22hs8931!';
 
