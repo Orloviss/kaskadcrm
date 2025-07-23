@@ -40,13 +40,17 @@ router.post("/register", (req, res) => {
           JWT_SECRET,
           { expiresIn: "7d" }
         );
-        res.cookie('token', token, {
+        // Универсальные опции для cookie
+        const cookieOptions = {
           httpOnly: true,
-          secure: process.env.NODE_ENV === 'production',
-          // sameSite убран для совместимости с мобильными браузерами
           path: '/',
           maxAge: 30 * 24 * 60 * 60 * 1000 // 30 дней
-        });
+        };
+        if (req.hostname !== 'localhost' && req.hostname !== '127.0.0.1') {
+          cookieOptions.secure = true;
+          cookieOptions.domain = '.crmkaskad.ru';
+        }
+        res.cookie('token', token, cookieOptions);
         res.json({ role: role || "admin" });
       }
     );
@@ -68,13 +72,17 @@ router.post("/login", (req, res) => {
       JWT_SECRET,
       { expiresIn: "7d" }
     );
-    res.cookie('token', token, {
+    // Универсальные опции для cookie
+    const cookieOptions = {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      // sameSite убран для совместимости с мобильными браузерами
       path: '/',
       maxAge: 30 * 24 * 60 * 60 * 1000 // 30 дней
-    });
+    };
+    if (req.hostname !== 'localhost' && req.hostname !== '127.0.0.1') {
+      cookieOptions.secure = true;
+      cookieOptions.domain = '.crmkaskad.ru';
+    }
+    res.cookie('token', token, cookieOptions);
     res.json({ role: user.role });
   });
 });
