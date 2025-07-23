@@ -21,6 +21,7 @@ db.serialize(() => {
     description TEXT,
     photo TEXT,
     date TEXT,
+    title TEXT,
     created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (user_id) REFERENCES users (id)
   )`);

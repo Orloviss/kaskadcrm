@@ -12,9 +12,9 @@ function BottomBar({ activeTab }) {
   const navigate = useNavigate();
   return (
     <nav className="bottom-bar">
-      <button className={activeTab === 'finances' ? 'active' : ''} onClick={() => navigate('/')}>Финансы</button>
+      <button className={activeTab === 'finances' ? 'active' : ''} onClick={() => navigate('/')}>Главная</button>
+      <button className={activeTab === 'history' ? 'active' : ''} onClick={() => navigate('/history')}>Финансы</button>
       <button className={activeTab === 'orders' ? 'active' : ''} onClick={() => navigate('/orders')}>Заказы</button>
-      <button className={activeTab === 'stats' ? 'active' : ''} onClick={() => navigate('/stats')}>Статистика</button>
       <button className={activeTab === 'settings' ? 'active' : ''} onClick={() => navigate('/settings')}>Настройки</button>
     </nav>
   );
@@ -23,8 +23,8 @@ function BottomBar({ activeTab }) {
 function AppRoutes({ isAuth, statsBalance, setStatsBalance }) {
   const location = useLocation();
   let activeTab = 'finances';
-  if (location.pathname === '/orders') activeTab = 'orders';
-  else if (location.pathname === '/stats') activeTab = 'stats';
+  if (location.pathname === '/history') activeTab = 'history';
+  else if (location.pathname === '/orders') activeTab = 'orders';
   else if (location.pathname === '/settings') activeTab = 'settings';
 
   if (location.pathname === '/login' || location.pathname === '/register') {
@@ -43,11 +43,11 @@ function AppRoutes({ isAuth, statsBalance, setStatsBalance }) {
 
   return (
     <>
-      <Header balance={activeTab === 'stats' ? statsBalance : undefined} />
+      <Header balance={activeTab === 'history' ? statsBalance : undefined} />
       <Routes>
         <Route path="/" element={<Main />} />
-        <Route path="/orders" element={<Orders setStatsBalance={setStatsBalance} />} />
-        <Route path="/stats" element={<Orders setStatsBalance={setStatsBalance} />} />
+        <Route path="/history" element={<Orders setStatsBalance={setStatsBalance} />} />
+        <Route path="/orders" element={<Orders />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

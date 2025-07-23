@@ -6,6 +6,7 @@ function TransactionModal({ type, onClose }) {
   const [category, setCategory] = useState('');
   const [amount, setAmount] = useState('');
   const [description, setDescription] = useState('');
+  const [title, setTitle] = useState('');
   const [photo, setPhoto] = useState(null);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -39,6 +40,7 @@ function TransactionModal({ type, onClose }) {
     formData.append('category', category);
     formData.append('description', description);
     formData.append('date', date);
+    formData.append('title', title);
     if (photo) formData.append('photo', photo);
     try {
       const res = await fetch(`${API_BASE_URL}/funds/add`, {
@@ -73,6 +75,9 @@ function TransactionModal({ type, onClose }) {
       <div className="modal">
         <h3>{type === 'income' ? 'Добавить доход' : 'Добавить расход'}</h3>
         <form onSubmit={handleSubmit}>
+          <label>Название
+            <input value={title} onChange={e => setTitle(e.target.value)} required />
+          </label>
           <label>Дата
             <input type="date" value={date} onChange={e => setDate(e.target.value)} />
           </label>

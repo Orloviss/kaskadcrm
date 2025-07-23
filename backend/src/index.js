@@ -51,35 +51,9 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-app.post('/api/funds/add', authenticateToken, upload.single('photo'), async (req, res) => {
-  try {
-    console.log('=== REQUEST RECEIVED ===');
-    console.log('File received:', req.file);
-    console.log('Body received:', req.body);
-    console.log('User:', req.user);
-    const { amount, type, category, description, date } = req.body;
-    const photo = req.file ? req.file.filename : null;
-    const userId = req.user.id;
-    db.run(
-      'INSERT INTO funds (user_id, amount, type, category, description, photo, date) VALUES (?, ?, ?, ?, ?, ?, ?)',
-      [userId, amount, type, category, description, photo, date],
-      function(err) {
-        if (err) {
-          console.error('DB Error:', err);
-          return res.status(500).json({ error: 'Database error' });
-        }
-        console.log('Transaction saved with ID:', this.lastID);
-        res.json({ success: true, id: this.lastID, photo: photo });
-      }
-    );
-  } catch (error) {
-    console.error('Error:', error);
-    res.status(500).json({ error: error.message });
-  }
-});
 app.use('/api/funds', fundsRoutes);
 
 const PORT = 4000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-}); 
+}); console.log("TEST LOG");

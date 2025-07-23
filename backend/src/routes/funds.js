@@ -28,17 +28,23 @@ function authMiddleware(req, res, next) {
 }
 
 router.post('/add', authMiddleware, upload.single('photo'), (req, res) => {
+  console.log('BODY:', req.body);
+  console.log('FILE:', req.file);
   const { amount, type, category, description, date } = req.body;
+  const title = typeof req.body.title === 'string' ? req.body.title : '';
   const photo = req.file ? req.file.filename : null;
   if (!amount || isNaN(amount) || !type) return res.status(400).json({ message: 'Invalid data' });
-  db.run(
-    'INSERT INTO funds (user_id, amount, type, category, description, photo, date) VALUES (?, ?, ?, ?, ?, ?, ?)',
-    [req.user.id, amount, type, category, description, photo, date],
-    function(err) {
-      if (err) return res.status(500).json({ message: 'DB error' });
-      res.json({ success: true });
+  const sql = 'INSERT INTO funds (user_id, amount, type, category, description, photo, date, title) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+  const params = [req.user.id, amount, type, category, description, photo, date, title];
+  console.log('SQL:', sql);
+  console.log('PARAMS:', params);
+  db.run(sql, params, function(err) {
+    if (err) {
+      console.error('DB Error:', err.message);
+      return res.status(500).json({ message: 'DB error', error: err.message });
     }
-  );
+    res.json({ success: true });
+  });
 });
 
 router.post('/remove', authMiddleware, (req, res) => {

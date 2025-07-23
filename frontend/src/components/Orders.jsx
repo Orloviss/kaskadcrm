@@ -26,15 +26,8 @@ const typeOptions = [
   { value: 'remove', label: 'Расход' }
 ];
 
-function Orders({ setStatsBalance }) {
-  const location = useLocation();
-  if (location.pathname === '/orders') {
-    return (
-      <div className="main-container"><div style={{padding: 32, textAlign: 'center', color: '#888', fontSize: '1.2rem'}}>Будет добавлено позже</div></div>
-    );
-  }
-
-  // ВСЕ хуки в начале!
+// Новый компонент для истории
+function OrdersHistory({ setStatsBalance }) {
   const [transactions, setTransactions] = useState([]);
   const [selected, setSelected] = useState(null);
   const [lightbox, setLightbox] = useState(null);
@@ -45,7 +38,6 @@ function Orders({ setStatsBalance }) {
     categories: [],
     roles: [],
     users: [],
-    types: [],
     sort: 'date_desc'
   });
   const [pendingFilters, setPendingFilters] = useState({
@@ -54,13 +46,11 @@ function Orders({ setStatsBalance }) {
     categories: [],
     roles: [],
     users: [],
-    types: [],
     sort: 'date_desc'
   });
   const [incomeCategories, setIncomeCategories] = useState([]);
   const [expenseCategories, setExpenseCategories] = useState([]);
-
-  // Собираем список пользователей из транзакций
+  const [activeTypeTab, setActiveTypeTab] = useState('add');
   const users = useMemo(() => {
     const map = {};
     transactions.forEach(tx => {
@@ -70,16 +60,13 @@ function Orders({ setStatsBalance }) {
   }, [transactions]);
 
   useEffect(() => {
-    if (location.pathname === '/stats') {
-      fetch(`${API_BASE_URL}/funds/all`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
-      })
-        .then(res => res.json())
-        .then(data => setTransactions(data.transactions || []));
-    }
-  }, [location.pathname]);
+    fetch(`${API_BASE_URL}/funds/all`, {
+      headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
+    })
+      .then(res => res.json())
+      .then(data => setTransactions(data.transactions || []));
+  }, []);
 
-  // Подгружаем категории с сервера
   useEffect(() => {
     fetch(`${API_BASE_URL}/funds/categories`, {
       headers: { Authorization: `Bearer ${localStorage.getItem('token')}` }
@@ -91,19 +78,18 @@ function Orders({ setStatsBalance }) {
       });
   }, []);
 
-  // Фильтрация и сортировка
   const filtered = transactions
     .filter(tx => {
+      if (tx.type !== activeTypeTab) return false;
       if (pendingFilters.dateFrom && tx.date < pendingFilters.dateFrom) return false;
       if (pendingFilters.dateTo && tx.date > pendingFilters.dateTo) return false;
       if (pendingFilters.categories.length && !pendingFilters.categories.includes(tx.category)) return false;
       if (pendingFilters.roles.length && !pendingFilters.roles.includes(tx.role)) return false;
       if (pendingFilters.users.length && !pendingFilters.users.includes(tx.username)) return false;
-      if (pendingFilters.types && pendingFilters.types.length && !pendingFilters.types.includes(tx.type)) return false;
       return true;
     })
     .sort((a, b) => {
-      switch (pendingFilters.sort) {
+      switch (filters.sort) {
         case 'date_desc':
           return (b.date || b.created_at || '').localeCompare(a.date || a.created_at || '');
         case 'date_asc':
@@ -117,7 +103,6 @@ function Orders({ setStatsBalance }) {
       }
     });
 
-  // Баланс по отфильтрованным транзакциям
   const balance = filtered.reduce((sum, tx) => {
     if (tx.type === 'add') return sum + Number(tx.amount);
     if (tx.type === 'remove') return sum - Number(tx.amount);
@@ -125,36 +110,50 @@ function Orders({ setStatsBalance }) {
   }, 0);
 
   useEffect(() => {
-    if (location.pathname === '/stats' && setStatsBalance) setStatsBalance(balance);
-  }, [balance, location.pathname, setStatsBalance]);
+    if (setStatsBalance) setStatsBalance(balance);
+  }, [balance, setStatsBalance]);
 
-  // При открытии панели фильтров копировать filters в pendingFilters
   const openFilters = () => {
     setPendingFilters(filters);
     setShowFilters(true);
   };
-
-  // Сброс фильтров (только pendingFilters, не закрывает панель)
   const resetPendingFilters = () => setPendingFilters({
     dateFrom: '',
     dateTo: '',
     categories: [],
     roles: [],
     users: [],
-    types: [],
     sort: 'date_desc'
   });
+
+  // Функция для форматирования даты в виде '19 июля 2025'
+  function formatDateRu(dateStr) {
+    if (!dateStr) return '';
+    const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
+    const [year, month, day] = dateStr.split('-');
+    return `${Number(day)} ${months[Number(month)-1]} ${year}`;
+  }
 
   return (
     <div className="main-container">
       <div className="orders-list">
         <div className="stats-toolbar">
+        
           <CustomSelect
             options={sortOptions}
             value={filters.sort}
-            onChange={val => setFilters(f => ({ ...f, sort: val }))}
+            onChange={val => {
+              setFilters(f => ({ ...f, sort: val }));
+              setPendingFilters(p => ({ ...p, sort: val }));
+            }}
           />
           <button className="filters-btn" onClick={openFilters}>Фильтры</button>
+        </div>
+        <div class="order__tabs">
+        <div style={{display:'flex',gap:8,marginBottom:8}}>
+            <button className={activeTypeTab==='add'? 'active' : ''} style={{padding:'0.5rem 1.2rem',border:'none',background:activeTypeTab==='add'?'#4caf50':'rgb(225 225 225)',color:activeTypeTab==='add'?'#fff':'#333',fontWeight:600,cursor:'pointer'}} onClick={()=>setActiveTypeTab('add')}>Доход</button>
+            <button className={activeTypeTab==='remove'? 'active' : ''} style={{padding:'0.5rem 1.2rem',border:'none',background:activeTypeTab==='remove'?'#d32f2f':'rgb(225 225 225)',color:activeTypeTab==='remove'?'#fff':'#333',fontWeight:600,cursor:'pointer'}} onClick={()=>setActiveTypeTab('remove')}>Расход</button>
+          </div>
         </div>
         <div className="orders-filters-drawer" style={{right: showFilters ? 0 : '-120vw'}}>
           <div className="filters-title">Фильтры <button className="close-btn" onClick={() => setShowFilters(false)}>×</button></div>
@@ -249,40 +248,6 @@ function Orders({ setStatsBalance }) {
               ))}
             </div>
           </div>
-          {/* Тип */}
-          <div className="filters-block">
-            <div className="filters-label">Тип</div>
-            <div className="filters-checkboxes">
-              <CustomCheckbox
-                label="Доход"
-                value="add"
-                checked={pendingFilters.types && pendingFilters.types.includes('add')}
-                onChange={e => {
-                  const val = e.target.value;
-                  setPendingFilters(f => ({
-                    ...f,
-                    types: f.types && f.types.includes(val)
-                      ? f.types.filter(c => c !== val)
-                      : [...(f.types || []), val]
-                  }));
-                }}
-              />
-              <CustomCheckbox
-                label="Расход"
-                value="remove"
-                checked={pendingFilters.types && pendingFilters.types.includes('remove')}
-                onChange={e => {
-                  const val = e.target.value;
-                  setPendingFilters(f => ({
-                    ...f,
-                    types: f.types && f.types.includes(val)
-                      ? f.types.filter(c => c !== val)
-                      : [...(f.types || []), val]
-                  }));
-                }}
-              />
-            </div>
-          </div>
           {/* Дата */}
           <div className="filters-block">
             <div className="filters-label">Дата</div>
@@ -301,27 +266,53 @@ function Orders({ setStatsBalance }) {
           <div style={{padding: 32, textAlign: 'center', color: '#888'}}>Ничего не найдено, попробуйте изменить фильтры</div>
         ) : (
           <div className="order-items">
-            {filtered.map(tx => (
-              <div className="order-item" key={tx.id} onClick={() => setSelected(tx)}>
-                <div className="left__col">
-                  <span className={tx.type === 'add' ? 'dot-income' : 'dot-expense'}></span>
-                  <span className="order-amount">{tx.amount} ₽</span>
+            {Object.entries(filtered.reduce((acc, tx) => {
+              const date = (tx.date || tx.created_at || '').slice(0, 10);
+              if (!acc[date]) acc[date] = [];
+              acc[date].push(tx);
+              return acc;
+            }, {})).map(([date, txs]) => {
+              const daySum = txs.reduce((sum, tx) => tx.type === 'add' ? sum + Number(tx.amount) : sum - Number(tx.amount), 0);
+              return (
+                <div key={date} style={{marginBottom: '1.5rem'}}>
+                  <div className="date__row" style={{fontWeight: 600, fontSize: '1.1rem', margin: '0.5rem 0', display:'flex', alignItems:'center', gap:12}}>
+                    {formatDateRu(date)}
+                    <span style={{color:'#388e3c', fontWeight:500, fontSize:'1rem'}}> {daySum} ₽</span>
+                  </div>
+                  {txs.map(tx => (
+                    <div className="order-item" key={tx.id} onClick={() => setSelected(tx)}>
+                      <div className="left__col" style={{flex:1}}>
+                        <div style={{display:'flex',alignItems:'center',gap:8}}>
+                          <span style={{fontWeight:600, fontSize:'1.05rem'}}>{tx.title || 'Без названия'}</span>
+                        </div>
+                       
+                        <div style={{fontSize:'0.95rem', color:'#888'}}>{tx.category}</div>
+                        <div style={{fontSize:'0.95rem', color:'#666', marginTop:2}}>
+                          {(tx.description && tx.description.length > 32) ? tx.description.slice(0,32) + '...' : tx.description || ''}
+                        </div>
+                      </div>
+                      <div className="right__col">
+                      <div style={{fontSize:'1.2rem', fontWeight:500, margin:'2px 0'}}>{tx.amount} ₽</div>
+                      </div>
+                      {/* Дату внутри записи убираем */}
+                    </div>
+                  ))}
                 </div>
-                <div className="right__col">
-                  <span className="order-date">{tx.date || tx.created_at?.slice(0,10)}</span>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
         {selected && (
           <div className="modal-backdrop">
             <div className="modal">
               <h3>{selected.type === 'add' ? 'Доход' : 'Расход'}</h3>
-              <div>Дата: {selected.date || selected.created_at?.slice(0,10)}</div>
-              <div>Категория: {selected.category}</div>
-              <div>Сумма: {selected.amount} ₽</div>
-              <div>Описание: {selected.description}</div>
+              <div><b>Название:</b> {selected.title || 'Без названия'}</div>
+              <div><b>Сумма:</b> {selected.amount} ₽</div>
+              <div><b>Категория:</b> {selected.category}</div>
+              <div><b>Описание:</b> {selected.description}</div>
+              <div><b>Дата:</b> {selected.date || selected.created_at?.slice(0,10)}</div>
+              <div><b>Пользователь:</b> {selected.username || '-'}</div>
+              <div><b>Роль:</b> {selected.role || '-'}</div>
               {selected.photo && (
                 <div className='modalImage'>
                   <img src={`${UPLOADS_BASE_URL}/${selected.photo}`} alt="Фото" style={{ cursor:'pointer'}} onClick={() => setLightbox(selected.photo)} />
@@ -350,7 +341,7 @@ function Orders({ setStatsBalance }) {
         {lightbox && (
           <div className="modal-backdrop" onClick={() => setLightbox(null)}>
             <div className="modal" style={{background:'none', boxShadow:'none', display:'flex',alignItems:'center',justifyContent:'center'}}>
-              <img src={`${UPLOADS_BASE_URL}/${lightbox}`} alt="Фото" style={{maxWidth:'90vw', maxHeight:'80vh', borderRadius:8, boxShadow:'0 2px 16px rgba(0,0,0,0.3)'}} />
+              <img src={`${UPLOADS_BASE_URL}/${lightbox}`} alt="Фото" style={{maxWidth:'90vw', maxHeight:'80vh', boxShadow:'0 2px 16px rgba(0,0,0,0.3)'}} />
             </div>
           </div>
         )}
@@ -358,6 +349,22 @@ function Orders({ setStatsBalance }) {
       </div>
     </div>
   );
+}
+
+// Заглушка для заказов
+function OrdersStub() {
+  return (
+    <div className="main-container"><div style={{padding: 32, textAlign: 'center', color: '#888', fontSize: '1.2rem'}}>Будет добавлено позже</div></div>
+  );
+}
+
+// Экспорт по умолчанию — универсальный компонент-обёртка
+function Orders(props) {
+  if (props.setStatsBalance) {
+    return <OrdersHistory {...props} />;
+  } else {
+    return <OrdersStub />;
+  }
 }
 
 export default Orders; 
