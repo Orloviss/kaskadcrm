@@ -10,7 +10,7 @@ const roleOptions = [
 ];
 const SECRET_ANSWER = '$22hs8931!';
 
-function Register() {
+function Register({ checkAuth }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('admin');
@@ -34,6 +34,7 @@ function Register() {
       });
       const data = await res.json();
       if (res.ok) {
+        await checkAuth();
         navigate('/');
       } else {
         setError(data.message || 'Ошибка регистрации');

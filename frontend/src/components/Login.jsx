@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 const { API_BASE_URL } = require('../config');
 
-function Login() {
+function Login({ checkAuth }) {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -20,6 +20,7 @@ function Login() {
       });
       const data = await res.json();
       if (res.ok) {
+        await checkAuth();
         navigate('/');
       } else {
         setError(data.message || 'Ошибка входа');

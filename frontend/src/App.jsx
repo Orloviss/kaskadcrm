@@ -21,7 +21,7 @@ function BottomBar({ activeTab }) {
   );
 }
 
-function AppRoutes({ isAuth, totalIncome, totalExpense, transactions, setTransactions }) {
+function AppRoutes({ isAuth, totalIncome, totalExpense, transactions, setTransactions, checkAuth }) {
   const location = useLocation();
   let activeTab = 'finances';
   if (location.pathname === '/history') activeTab = 'history';
@@ -31,8 +31,8 @@ function AppRoutes({ isAuth, totalIncome, totalExpense, transactions, setTransac
   if (location.pathname === '/login' || location.pathname === '/register') {
     return (
       <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/register" element={<Register />} />
+        <Route path="/login" element={<Login checkAuth={checkAuth} />} />
+        <Route path="/register" element={<Register checkAuth={checkAuth} />} />
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
     );
@@ -64,11 +64,15 @@ function App() {
   const [totalExpense, setTotalExpense] = useState(0);
 
   // Проверка авторизации через cookie
-  useEffect(() => {
-    fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include' })
+  const checkAuth = () => {
+    return fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include' })
       .then(res => res.ok ? res.json() : Promise.reject())
       .then(() => setIsAuth(true))
       .catch(() => setIsAuth(false));
+  };
+
+  useEffect(() => {
+    checkAuth();
   }, []);
 
   useEffect(() => {
@@ -93,7 +97,7 @@ function App() {
   return (
     <Router>
       <div className="crm-wrapper">
-        <AppRoutes isAuth={isAuth} totalIncome={totalIncome} totalExpense={totalExpense} transactions={transactions} setTransactions={setTransactions} />
+        <AppRoutes isAuth={isAuth} totalIncome={totalIncome} totalExpense={totalExpense} transactions={transactions} setTransactions={setTransactions} checkAuth={checkAuth} />
       </div>
     </Router>
   );
