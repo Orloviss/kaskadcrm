@@ -43,7 +43,8 @@ router.post("/register", (req, res) => {
         res.cookie('token', token, {
           httpOnly: true,
           secure: process.env.NODE_ENV === 'production',
-          sameSite: 'lax',
+          // sameSite убран для совместимости с мобильными браузерами
+          path: '/',
           maxAge: 30 * 24 * 60 * 60 * 1000 // 30 дней
         });
         res.json({ role: role || "admin" });
@@ -70,7 +71,8 @@ router.post("/login", (req, res) => {
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
-      sameSite: 'lax',
+      // sameSite убран для совместимости с мобильными браузерами
+      path: '/',
       maxAge: 30 * 24 * 60 * 60 * 1000 // 30 дней
     });
     res.json({ role: user.role });
