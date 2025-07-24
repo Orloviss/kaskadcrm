@@ -59,16 +59,19 @@ function AppRoutes({ isAuth, totalIncome, totalExpense, transactions, setTransac
 
 function App() {
   const [isAuth, setIsAuth] = useState(false);
+  const [authLoading, setAuthLoading] = useState(true);
   const [transactions, setTransactions] = useState([]);
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpense, setTotalExpense] = useState(0);
 
   // Проверка авторизации через cookie
   const checkAuth = () => {
+    setAuthLoading(true);
     return fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include' })
       .then(res => res.ok ? res.json() : Promise.reject())
       .then(() => setIsAuth(true))
-      .catch(() => setIsAuth(false));
+      .catch(() => setIsAuth(false))
+      .finally(() => setAuthLoading(false));
   };
 
   useEffect(() => {
@@ -93,6 +96,10 @@ function App() {
     setTotalIncome(income);
     setTotalExpense(expense);
   }, [transactions]);
+
+  if (authLoading) {
+    return <div>Загрузка...</div>;
+  }
 
   return (
     <Router>

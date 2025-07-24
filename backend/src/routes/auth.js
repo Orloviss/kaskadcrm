@@ -41,13 +41,16 @@ router.post("/register", (req, res) => {
           { expiresIn: "7d" }
         );
         // Универсальные опции для cookie
+        const isLocal = req.hostname === 'localhost' || req.hostname === '127.0.0.1';
+        const isHttps = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https';
         const cookieOptions = {
           httpOnly: true,
           path: '/',
           maxAge: 30 * 24 * 60 * 60 * 1000 // 30 дней
         };
-        if (req.hostname !== 'localhost' && req.hostname !== '127.0.0.1') {
+        if (!isLocal && isHttps) {
           cookieOptions.secure = true;
+          cookieOptions.sameSite = 'none';
           cookieOptions.domain = '.crmkaskad.ru';
         }
         res.cookie('token', token, cookieOptions);
@@ -64,22 +67,25 @@ router.post("/login", (req, res) => {
   const normalizedUsername = username.toLowerCase();
   
   db.get("SELECT * FROM users WHERE LOWER(username) = ?", [normalizedUsername], (err, user) => {
-    if (!user) return res.status(400).json({ message: "Invalid credentials" });
+    if (!user) return res.status(400).json({ message: "Проверьте данные" });
     if (!bcrypt.compareSync(password, user.password))
-      return res.status(400).json({ message: "Invalid credentials" });
+      return res.status(400).json({ message: "Проверьте данные" });
     const token = jwt.sign(
       { id: user.id, username: user.username, role: user.role },
       JWT_SECRET,
       { expiresIn: "7d" }
     );
     // Универсальные опции для cookie
+    const isLocal = req.hostname === 'localhost' || req.hostname === '127.0.0.1';
+    const isHttps = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https';
     const cookieOptions = {
       httpOnly: true,
       path: '/',
       maxAge: 30 * 24 * 60 * 60 * 1000 // 30 дней
     };
-    if (req.hostname !== 'localhost' && req.hostname !== '127.0.0.1') {
+    if (!isLocal && isHttps) {
       cookieOptions.secure = true;
+      cookieOptions.sameSite = 'none';
       cookieOptions.domain = '.crmkaskad.ru';
     }
     res.cookie('token', token, cookieOptions);
