@@ -13,7 +13,7 @@ function Header({ totalIncome, totalExpense }) {
   return (
     <header className="crm-header">
       <div className="crm-logo">
-        <img src="/img/logo.png" alt="logo" style={{height:32}} /> CRM
+        <img src="/img/logo.png" alt="logo"  /> CRM
       </div>
       {balanceBlock}
     </header>

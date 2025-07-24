@@ -295,5 +295,4 @@ function OrdersStub() {
   );
 }
 
-// Экспорт по умолчанию — всегда OrdersHistory (для вкладки Финансы)
-export default OrdersHistory; 
+export { OrdersHistory, OrdersStub }; 

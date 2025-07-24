@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Route, Routes, Navigate, useLocation, useNavig
 import Login from './components/Login';
 import Register from './components/Register';
 import Main from './components/Main';
-import Orders from './components/Orders';
+import { OrdersHistory, OrdersStub } from './components/Orders';
 import Settings from './components/Settings';
 import Header from './components/Header';
 import './styles/main.scss';
@@ -47,8 +47,8 @@ function AppRoutes({ isAuth, totalIncome, totalExpense, transactions, setTransac
       <Header totalIncome={activeTab === 'history' ? totalIncome : undefined} totalExpense={activeTab === 'history' ? totalExpense : undefined} />
       <Routes>
         <Route path="/" element={<Main transactions={transactions} setTransactions={setTransactions} />} />
-        <Route path="/history" element={<Orders transactions={transactions} setTransactions={setTransactions} />} />
-        <Route path="/orders" element={<Orders transactions={transactions} setTransactions={setTransactions} />} />
+        <Route path="/history" element={<OrdersHistory transactions={transactions} setTransactions={setTransactions} />} />
+        <Route path="/orders" element={<OrdersStub />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
