@@ -5,6 +5,7 @@ import CustomSelect from './CustomSelect';
 import './CustomCheckbox.scss';
 import './CustomSelect.scss';
 const { API_BASE_URL, UPLOADS_BASE_URL } = require('../config');
+const { formatCurrency, formatDateRu } = require('../utils/formatters');
 
 const categories = [
   'Мебель',
@@ -71,31 +72,35 @@ function OrdersHistory({ transactions, setTransactions }) {
       });
   }, []);
 
-  const filtered = transactions
-    .filter(tx => {
-      if (tx.type !== activeTypeTab) return false;
-      if (pendingFilters.dateFrom && tx.date < pendingFilters.dateFrom) return false;
-      if (pendingFilters.dateTo && tx.date > pendingFilters.dateTo) return false;
-      if (pendingFilters.incomeCategory && tx.type === 'add' && tx.category !== pendingFilters.incomeCategory) return false;
-      if (pendingFilters.expenseCategory && tx.type === 'remove' && tx.category !== pendingFilters.expenseCategory) return false;
-      if (pendingFilters.role && tx.role !== pendingFilters.role) return false;
-      if (pendingFilters.user && tx.username !== pendingFilters.user) return false;
-      return true;
-    })
-    .sort((a, b) => {
-      switch (filters.sort) {
-        case 'date_desc':
-          return (b.date || b.created_at || '').localeCompare(a.date || a.created_at || '');
-        case 'date_asc':
-          return (a.date || a.created_at || '').localeCompare(b.date || b.created_at || '');
-        case 'amount_asc':
-          return a.amount - b.amount;
-        case 'amount_desc':
-          return b.amount - a.amount;
-        default:
-          return 0;
-      }
-    });
+  const filtered = useMemo(() => {
+    return transactions
+      .filter(tx => {
+        if (tx.type !== activeTypeTab) return false;
+        if (pendingFilters.dateFrom && tx.date < pendingFilters.dateFrom) return false;
+        if (pendingFilters.dateTo && tx.date > pendingFilters.dateTo) return false;
+        if (pendingFilters.incomeCategory && tx.type === 'add' && tx.category !== pendingFilters.incomeCategory) return false;
+        if (pendingFilters.expenseCategory && tx.type === 'remove' && tx.category !== pendingFilters.expenseCategory) return false;
+        if (pendingFilters.role && tx.role !== pendingFilters.role) return false;
+        if (pendingFilters.user && tx.username !== pendingFilters.user) return false;
+        return true;
+      })
+      .sort((a, b) => {
+        switch (filters.sort) {
+          case 'date_desc':
+            return (b.date || b.created_at || '').localeCompare(a.date || a.created_at || '');
+          case 'date_asc':
+            return (a.date || a.created_at || '').localeCompare(b.date || b.created_at || '');
+          case 'amount_asc':
+            return a.amount - b.amount;
+          case 'amount_desc':
+            return b.amount - a.amount;
+          default:
+            return 0;
+        }
+      });
+  }, [transactions, activeTypeTab, pendingFilters, filters.sort]);
+
+
 
   // Общая сумма по фильтру и вкладке
   const totalFiltered = filtered.reduce((sum, tx) => sum + Number(tx.amount), 0);
@@ -114,13 +119,7 @@ function OrdersHistory({ transactions, setTransactions }) {
     sort: 'date_desc'
   });
 
-  // Функция для форматирования даты в виде '19 июля 2025'
-  function formatDateRu(dateStr) {
-    if (!dateStr) return '';
-    const months = ['января','февраля','марта','апреля','мая','июня','июля','августа','сентября','октября','ноября','декабря'];
-    const [year, month, day] = dateStr.split('-');
-    return `${Number(day)} ${months[Number(month)-1]} ${year}`;
-  }
+
 
   return (
     <div className="main-container">
@@ -137,14 +136,14 @@ function OrdersHistory({ transactions, setTransactions }) {
           />
           <button className="filters-btn" onClick={openFilters}>Фильтры</button>
         </div>
-        <div class="order__tabs">
+        <div className="order__tabs">
         <div style={{display:'flex',gap:8,marginBottom:8}}>
             <button className={activeTypeTab==='add'? 'active' : ''} style={{padding:'0.5rem 1.2rem',border:'none',background:activeTypeTab==='add'?'#4caf50':'rgb(225 225 225)',color:activeTypeTab==='add'?'#fff':'#333',fontWeight:600,cursor:'pointer'}} onClick={()=>setActiveTypeTab('add')}>Доход</button>
             <button className={activeTypeTab==='remove'? 'active' : ''} style={{padding:'0.5rem 1.2rem',border:'none',background:activeTypeTab==='remove'?'#d32f2f':'rgb(225 225 225)',color:activeTypeTab==='remove'?'#fff':'#333',fontWeight:600,cursor:'pointer'}} onClick={()=>setActiveTypeTab('remove')}>Расход</button>
           </div>
           {/* Общая сумма по фильтру и вкладке */}
           <div style={{marginBottom:8, marginTop:8, fontWeight:600, fontSize:'1.3rem', textAlign: 'center', color:'#333'}}>
-            Всего: {totalFiltered} ₽
+            Всего: {formatCurrency(totalFiltered)}
           </div>
         </div>
         <div className="orders-filters-drawer" style={{right: showFilters ? 0 : '-120vw'}}>
@@ -214,7 +213,7 @@ function OrdersHistory({ transactions, setTransactions }) {
                 <div key={date} style={{marginBottom: '0'}}>
                   <div className="date__row" style={{fontWeight: 600, fontSize: '1.1rem', margin: '0.5rem 0', display:'flex', alignItems:'center', gap:12}}>
                     {formatDateRu(date)}
-                    <span style={{color:'#388e3c', fontWeight:500, fontSize:'1rem'}}> {daySum} ₽</span>
+                    <span style={{color:'#388e3c', fontWeight:500, fontSize:'1rem'}}> {formatCurrency(daySum)}</span>
                   </div>
                   {txs.map(tx => (
                     <div className="order-item" key={tx.id} onClick={() => setSelected(tx)}>
@@ -229,7 +228,7 @@ function OrdersHistory({ transactions, setTransactions }) {
                         </div>
                       </div>
                       <div className="right__col">
-                      <div style={{fontSize:'1.2rem', fontWeight:500, margin:'2px 0'}}>{tx.amount} ₽</div>
+                      <div style={{fontSize:'1.2rem', fontWeight:500, margin:'2px 0'}}>{formatCurrency(tx.amount)}</div>
                       </div>
                       {/* Дату внутри записи убираем */}
                     </div>
@@ -244,7 +243,7 @@ function OrdersHistory({ transactions, setTransactions }) {
             <div className="modal">
               <h3>{selected.type === 'add' ? 'Доход' : 'Расход'}</h3>
               <div><b>Название:</b> {selected.title || 'Без названия'}</div>
-              <div><b>Сумма:</b> {selected.amount} ₽</div>
+              <div><b>Сумма:</b> {formatCurrency(selected.amount)}</div>
               <div><b>Категория:</b> {selected.category}</div>
               <div><b>Описание:</b> {selected.description}</div>
               <div><b>Дата:</b> {selected.date || selected.created_at?.slice(0,10)}</div>

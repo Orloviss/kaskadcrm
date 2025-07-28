@@ -642,8 +642,59 @@ span.dot-income, span.dot-expense {
   font-size: 1rem !important;
 }
 .order-items div:last-child .order-item:last-child {
-  margin-bottom: 6rem;
+  margin-bottom: 8rem;
 }
 .crm-wrapper .crm-logo img {
   margin-left: 1rem;
+}
+
+// Стили для блока балансов
+.balance-block {
+  width: calc(100% - 6rem);
+  background: #fff;
+  padding: 20px;
+  margin: 20px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  
+  .balance-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid #f0f0f0;
+    
+    &:last-child {
+      border-bottom: none;
+    }
+    
+    &.total {
+      border-bottom: 2px solid #4caf50;
+      margin-bottom: 8px;
+      padding-bottom: 16px;
+      
+      .balance-label {
+        font-weight: 700;
+        font-size: 1.1rem;
+        color: #333;
+      }
+      
+      .balance-amount {
+        font-weight: 700;
+        font-size: 1.2rem;
+        color: #4caf50;
+      }
+    }
+    
+    .balance-label {
+      font-weight: 500;
+      color: #666;
+      font-size: 0.95rem;
+    }
+    
+    .balance-amount {
+      font-weight: 600;
+      color: #333;
+      font-size: 1rem;
+    }
+  }
 }

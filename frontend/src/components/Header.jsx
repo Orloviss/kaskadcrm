@@ -1,4 +1,5 @@
 import React from 'react';
+const { formatCurrency } = require('../utils/formatters');
 
 function Header({ totalIncome, totalExpense }) {
   let balanceBlock = null;
@@ -8,7 +9,7 @@ function Header({ totalIncome, totalExpense }) {
     if (typeof balance === 'number') {
       balanceClass += balance >= 0 ? ' positive' : ' negative';
     }
-    balanceBlock = <div className={balanceClass}><b>{balance} ₽</b></div>;
+    balanceBlock = <div className={balanceClass}><b>{formatCurrency(balance)}</b></div>;
   }
   return (
     <header className="crm-header">

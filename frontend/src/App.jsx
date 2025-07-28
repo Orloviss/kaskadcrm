@@ -44,7 +44,7 @@ function AppRoutes({ isAuth, totalIncome, totalExpense, transactions, setTransac
 
   return (
     <>
-      <Header totalIncome={activeTab === 'history' ? totalIncome : undefined} totalExpense={activeTab === 'history' ? totalExpense : undefined} />
+      <Header totalIncome={totalIncome} totalExpense={totalExpense} />
       <Routes>
         <Route path="/" element={<Main transactions={transactions} setTransactions={setTransactions} />} />
         <Route path="/history" element={<OrdersHistory transactions={transactions} setTransactions={setTransactions} />} />
@@ -89,6 +89,7 @@ function App() {
 
   useEffect(() => {
     let income = 0, expense = 0;
+    // Всегда используем все транзакции для общего баланса в шапке
     transactions.forEach(tx => {
       if (tx.type === 'add') income += Number(tx.amount);
       if (tx.type === 'remove') expense += Number(tx.amount);
@@ -104,7 +105,14 @@ function App() {
   return (
     <Router>
       <div className="crm-wrapper">
-        <AppRoutes isAuth={isAuth} totalIncome={totalIncome} totalExpense={totalExpense} transactions={transactions} setTransactions={setTransactions} checkAuth={checkAuth} />
+        <AppRoutes 
+          isAuth={isAuth} 
+          totalIncome={totalIncome} 
+          totalExpense={totalExpense} 
+          transactions={transactions} 
+          setTransactions={setTransactions}
+          checkAuth={checkAuth} 
+        />
       </div>
     </Router>
   );

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import TransactionModal from './TransactionModal';
+import BalanceBlock from './BalanceBlock';
 import { useNavigate } from 'react-router-dom';
 
 const categories = [
@@ -19,6 +20,10 @@ function Main({ activeTab, setActiveTab, transactions, setTransactions }) {
         <button className="add-btn" onClick={() => setModalType('income')}>Добавить доход</button>
         <button className="remove-btn" onClick={() => setModalType('expense')}>Добавить расход</button>
       </div>
+      
+      {/* Блок с балансами */}
+      <BalanceBlock transactions={transactions} />
+      
       {modalType && (
         <TransactionModal
           type={modalType}
