@@ -14,7 +14,25 @@ const storage = multer.diskStorage({
   destination: (req, file, cb) => cb(null, uploadDir),
   filename: (req, file, cb) => cb(null, Date.now() + '-' + file.originalname)
 });
-const upload = multer({ storage });
+
+// Фильтр для проверки типа файла
+const fileFilter = (req, file, cb) => {
+  // Разрешаем только изображения
+  if (file.mimetype.startsWith('image/')) {
+    cb(null, true);
+  } else {
+    cb(new Error('Разрешены только изображения'), false);
+  }
+};
+
+const upload = multer({ 
+  storage,
+  fileFilter,
+  limits: {
+    fileSize: 50 * 1024 * 1024, // 50MB лимит
+    files: 1 // максимум 1 файл
+  }
+});
 
 function authMiddleware(req, res, next) {
   const token = req.cookies.token;
@@ -26,23 +44,36 @@ function authMiddleware(req, res, next) {
   });
 }
 
-router.post('/add', authMiddleware, upload.single('photo'), (req, res) => {
-  console.log('BODY:', req.body);
-  console.log('FILE:', req.file);
-  const { amount, type, category, description, date } = req.body;
-  const title = typeof req.body.title === 'string' ? req.body.title : '';
-  const photo = req.file ? req.file.filename : null;
-  if (!amount || isNaN(amount) || !type) return res.status(400).json({ message: 'Invalid data' });
-  const sql = 'INSERT INTO funds (user_id, amount, type, category, description, photo, date, title) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
-  const params = [req.user.id, amount, type, category, description, photo, date, title];
-  console.log('SQL:', sql);
-  console.log('PARAMS:', params);
-  db.run(sql, params, function(err) {
+router.post('/add', authMiddleware, (req, res, next) => {
+  upload.single('photo')(req, res, (err) => {
     if (err) {
-      console.error('DB Error:', err.message);
-      return res.status(500).json({ message: 'DB error', error: err.message });
+      console.error('Multer error:', err);
+      if (err.code === 'LIMIT_FILE_SIZE') {
+        return res.status(400).json({ message: 'Файл слишком большой. Максимальный размер: 50MB' });
+      }
+      if (err.message === 'Разрешены только изображения') {
+        return res.status(400).json({ message: 'Разрешены только изображения' });
+      }
+      return res.status(400).json({ message: 'Ошибка загрузки файла' });
     }
-    res.json({ success: true });
+    
+    console.log('BODY:', req.body);
+    console.log('FILE:', req.file);
+    const { amount, type, category, description, date } = req.body;
+    const title = typeof req.body.title === 'string' ? req.body.title : '';
+    const photo = req.file ? req.file.filename : null;
+    if (!amount || isNaN(amount) || !type) return res.status(400).json({ message: 'Invalid data' });
+    const sql = 'INSERT INTO funds (user_id, amount, type, category, description, photo, date, title) VALUES (?, ?, ?, ?, ?, ?, ?, ?)';
+    const params = [req.user.id, amount, type, category, description, photo, date, title];
+    console.log('SQL:', sql);
+    console.log('PARAMS:', params);
+    db.run(sql, params, function(err) {
+      if (err) {
+        console.error('DB Error:', err.message);
+        return res.status(500).json({ message: 'DB error', error: err.message });
+      }
+      res.json({ success: true });
+    });
   });
 });
 

@@ -13,6 +13,7 @@ function TransactionModal({ type, onClose, transactions, setTransactions }) {
   const [categories, setCategories] = useState([]);
   const [selected, setSelected] = useState(null);
   const [refresh, setRefresh] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     async function fetchCategories() {
@@ -34,6 +35,22 @@ function TransactionModal({ type, onClose, transactions, setTransactions }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
+    setIsLoading(true);
+    
+    // Валидация размера файла
+    if (photo && photo.size > 50 * 1024 * 1024) {
+      setError('Файл слишком большой. Максимальный размер: 50MB');
+      setIsLoading(false);
+      return;
+    }
+    
+    // Валидация типа файла
+    if (photo && !photo.type.startsWith('image/')) {
+      setError('Разрешены только изображения');
+      setIsLoading(false);
+      return;
+    }
+    
     const formData = new FormData();
     formData.append('amount', amount);
     formData.append('type', type === 'income' ? 'add' : 'remove');
@@ -42,13 +59,16 @@ function TransactionModal({ type, onClose, transactions, setTransactions }) {
     formData.append('date', date);
     formData.append('title', title);
     if (photo) formData.append('photo', photo);
+    
     try {
       const res = await fetch(`${API_BASE_URL}/funds/add`, {
         method: 'POST',
         credentials: 'include',
         body: formData
       });
+      
       const data = await res.json();
+      
       if (res.ok) {
         setSuccess(true);
         // Добавить новую транзакцию в глобальный список
@@ -62,10 +82,13 @@ function TransactionModal({ type, onClose, transactions, setTransactions }) {
         }
         setTimeout(onClose, 1000);
       } else {
-        setError(data.message || 'Ошибка');
+        setError(data.message || 'Ошибка сервера');
       }
-    } catch {
-      setError('Ошибка сети');
+    } catch (error) {
+      console.error('Network error:', error);
+      setError('Ошибка сети. Проверьте подключение к интернету.');
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -103,10 +126,23 @@ function TransactionModal({ type, onClose, transactions, setTransactions }) {
           </label>
           <label>Фото
             <input type="file" accept="image/*" onChange={e => setPhoto(e.target.files[0])} />
+            {photo && (
+              <div style={{fontSize: '0.8rem', color: '#666', marginTop: '4px'}}>
+                Размер: {(photo.size / 1024 / 1024).toFixed(2)} MB
+                {photo.size > 50 * 1024 * 1024 && (
+                  <span style={{color: '#e74c3c'}}> (слишком большой)</span>
+                )}
+              </div>
+            )}
+            <div style={{fontSize: '0.8rem', color: '#666', marginTop: '4px'}}>
+              Максимальный размер: 50MB
+            </div>
           </label>
           <div className="modal-actions">
-            <button type="submit">Сохранить</button>
-            <button type="button" onClick={onClose}>Отмена</button>
+            <button type="submit" disabled={isLoading}>
+              {isLoading ? 'Сохранение...' : 'Сохранить'}
+            </button>
+            <button type="button" onClick={onClose} disabled={isLoading}>Отмена</button>
           </div>
           {error && <div className="error">{error}</div>}
           {success && <div className="success">Сохранено!</div>}
