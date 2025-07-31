@@ -9,7 +9,12 @@ const fundsRoutes = require('./routes/funds');
 const db = require('./db');
 
 const app = express();
-app.use(cors({ origin: true, credentials: true }));
+app.use(cors({ 
+  origin: ['https://crmkaskad.ru', 'https://www.crmkaskad.ru', 'http://localhost:3000'], 
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
+}));
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ limit: '50mb', extended: true }));
 app.use(cookieParser());

@@ -68,7 +68,17 @@ function App() {
   const checkAuth = () => {
     setAuthLoading(true);
     return fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include' })
-      .then(res => res.ok ? res.json() : Promise.reject())
+      .then(res => {
+        if (res.ok) {
+          return res.json();
+        } else if (res.status === 401) {
+          // Автоматически очищаем cookies при ошибке 401
+          document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.crmkaskad.ru;';
+          document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+          throw new Error('Unauthorized');
+        }
+        return Promise.reject();
+      })
       .then(() => setIsAuth(true))
       .catch(() => setIsAuth(false))
       .finally(() => setAuthLoading(false));

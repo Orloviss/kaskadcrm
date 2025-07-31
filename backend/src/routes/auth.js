@@ -7,10 +7,21 @@ const router = express.Router();
 const JWT_SECRET = "your_jwt_secret"; // Change in production
 
 const authMiddleware = (req, res, next) => {
+  console.log('Auth middleware - cookies:', req.cookies);
+  console.log('Auth middleware - headers:', req.headers);
+  
   const token = req.cookies.token;
-  if (!token) return res.status(401).json({ message: "No token" });
+  if (!token) {
+    console.log('No token found in cookies');
+    return res.status(401).json({ message: "No token" });
+  }
+  
   jwt.verify(token, JWT_SECRET, (err, decoded) => {
-    if (err) return res.status(401).json({ message: "Invalid token" });
+    if (err) {
+      console.log('Token verification failed:', err.message);
+      return res.status(401).json({ message: "Invalid token" });
+    }
+    console.log('Token verified successfully for user:', decoded);
     req.user = decoded;
     next();
   });
@@ -35,11 +46,11 @@ router.post("/register", (req, res) => {
       [normalizedUsername, hash, role || "admin"],
       function (err) {
         if (err) return res.status(500).json({ message: "DB error" });
-        const token = jwt.sign(
-          { id: this.lastID, username: normalizedUsername, role: role || "admin" },
-          JWT_SECRET,
-          { expiresIn: "7d" }
-        );
+            const token = jwt.sign(
+      { id: this.lastID, username: normalizedUsername, role: role || "admin" },
+      JWT_SECRET,
+      { expiresIn: "30d" }
+    );
         // Универсальные опции для cookie
         const isLocal = req.hostname === 'localhost' || req.hostname === '127.0.0.1';
         const isHttps = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https';
@@ -73,7 +84,7 @@ router.post("/login", (req, res) => {
     const token = jwt.sign(
       { id: user.id, username: user.username, role: user.role },
       JWT_SECRET,
-      { expiresIn: "7d" }
+      { expiresIn: "30d" }
     );
     // Универсальные опции для cookie
     const isLocal = req.hostname === 'localhost' || req.hostname === '127.0.0.1';
@@ -136,6 +147,30 @@ router.post("/change-login", authMiddleware, (req, res) => {
 
 // Проверка авторизации
 router.get('/me', authMiddleware, (req, res) => {
+  console.log('Auth check successful for user:', req.user);
+  
+  // Автоматически обновляем токен при каждом запросе
+  const newToken = jwt.sign(
+    { id: req.user.id, username: req.user.username, role: req.user.role },
+    JWT_SECRET,
+    { expiresIn: "30d" }
+  );
+  
+  // Устанавливаем новый токен
+  const isLocal = req.hostname === 'localhost' || req.hostname === '127.0.0.1';
+  const isHttps = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https';
+  const cookieOptions = {
+    httpOnly: true,
+    path: '/',
+    maxAge: 30 * 24 * 60 * 60 * 1000 // 30 дней
+  };
+  if (!isLocal && isHttps) {
+    cookieOptions.secure = true;
+    cookieOptions.sameSite = 'none';
+    cookieOptions.domain = '.crmkaskad.ru';
+  }
+  
+  res.cookie('token', newToken, cookieOptions);
   res.json({ user: req.user });
 });
 
