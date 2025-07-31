@@ -2,8 +2,10 @@
 
 // Очистка cookies при ошибке авторизации
 export function clearAuthCookies() {
+  console.log('🔄 Автоматически очищаем cookies из-за ошибки авторизации...');
   document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.crmkaskad.ru;';
   document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+  console.log('✅ Cookies очищены');
 }
 
 // Автоматическая обработка fetch запросов с авторизацией
@@ -14,9 +16,11 @@ export async function authFetch(url, options = {}) {
   });
   
   if (response.status === 401) {
+    console.log('🚨 Получена ошибка 401 - неавторизованный запрос');
     // Автоматически очищаем cookies при ошибке 401
     clearAuthCookies();
     // Перенаправляем на страницу логина
+    console.log('🔄 Перенаправляем на страницу логина...');
     window.location.href = '/login';
     throw new Error('Unauthorized');
   }

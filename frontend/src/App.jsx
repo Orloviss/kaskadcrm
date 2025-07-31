@@ -6,6 +6,7 @@ import Main from './components/Main';
 import { OrdersHistory, OrdersStub } from './components/Orders';
 import Settings from './components/Settings';
 import Header from './components/Header';
+import { clearAuthCookies } from './utils/auth';
 import './styles/main.scss';
 const { API_BASE_URL } = require('./config');
 
@@ -66,22 +67,35 @@ function App() {
 
   // Проверка авторизации через cookie
   const checkAuth = () => {
+    console.log('🔍 Проверяем авторизацию...');
     setAuthLoading(true);
     return fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include' })
       .then(res => {
+        console.log('📡 Ответ сервера:', res.status, res.statusText);
         if (res.ok) {
+          console.log('✅ Авторизация успешна');
           return res.json();
         } else if (res.status === 401) {
+          console.log('🚨 Ошибка 401 - очищаем cookies');
           // Автоматически очищаем cookies при ошибке 401
-          document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.crmkaskad.ru;';
-          document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+          clearAuthCookies();
           throw new Error('Unauthorized');
         }
+        console.log('❌ Неизвестная ошибка:', res.status);
         return Promise.reject();
       })
-      .then(() => setIsAuth(true))
-      .catch(() => setIsAuth(false))
-      .finally(() => setAuthLoading(false));
+      .then(() => {
+        console.log('✅ Устанавливаем статус авторизован');
+        setIsAuth(true);
+      })
+      .catch((error) => {
+        console.log('❌ Ошибка авторизации:', error.message);
+        setIsAuth(false);
+      })
+      .finally(() => {
+        console.log('🏁 Завершаем проверку авторизации');
+        setAuthLoading(false);
+      });
   };
 
   useEffect(() => {
