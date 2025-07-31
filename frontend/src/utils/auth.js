@@ -3,8 +3,20 @@
 // Очистка cookies при ошибке авторизации
 function clearAuthCookies() {
   console.log('🔄 Автоматически очищаем cookies из-за ошибки авторизации...');
-  document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.crmkaskad.ru;';
-  document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
+  
+  // Очищаем cookies разными способами для совместимости
+  const cookiesToClear = [
+    'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.crmkaskad.ru;',
+    'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;',
+    'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=crmkaskad.ru;',
+    'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; secure;',
+    'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; samesite=none;'
+  ];
+  
+  cookiesToClear.forEach(cookie => {
+    document.cookie = cookie;
+  });
+  
   console.log('✅ Cookies очищены');
 }
 

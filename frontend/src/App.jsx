@@ -69,7 +69,13 @@ function App() {
   const checkAuth = () => {
     console.log('🔍 Проверяем авторизацию...');
     setAuthLoading(true);
-    return fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include' })
+    
+    // Добавляем таймаут для предотвращения зависания
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Timeout')), 10000)
+    );
+    
+    const authPromise = fetch(`${API_BASE_URL}/auth/me`, { credentials: 'include' })
       .then(res => {
         console.log('📡 Ответ сервера:', res.status, res.statusText);
         if (res.ok) {
@@ -83,7 +89,9 @@ function App() {
         }
         console.log('❌ Неизвестная ошибка:', res.status);
         return Promise.reject();
-      })
+      });
+    
+    return Promise.race([authPromise, timeoutPromise])
       .then(() => {
         console.log('✅ Устанавливаем статус авторизован');
         setIsAuth(true);
@@ -92,10 +100,13 @@ function App() {
         console.log('❌ Ошибка авторизации:', error.message);
         setIsAuth(false);
         
-        // Если это ошибка 401, перенаправляем на логин
-        if (error.message === 'Unauthorized') {
+        // Если это ошибка 401 и мы не на странице логина/регистрации, перенаправляем на логин
+        if (error.message === 'Unauthorized' && !window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
           console.log('🔄 Перенаправляем на страницу логина...');
-          window.location.href = '/login';
+          // Добавляем небольшую задержку для предотвращения циклических перезагрузок
+          setTimeout(() => {
+            window.location.href = '/login';
+          }, 1000);
         }
       })
       .finally(() => {
@@ -105,7 +116,12 @@ function App() {
   };
 
   useEffect(() => {
-    checkAuth();
+    // Не проверяем авторизацию, если пользователь на страницах логина/регистрации
+    if (!window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
+      checkAuth();
+    } else {
+      setAuthLoading(false);
+    }
   }, []);
 
   useEffect(() => {
