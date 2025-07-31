@@ -20,8 +20,11 @@ function Login({ checkAuth }) {
       });
       const data = await res.json();
       if (res.ok) {
-        await checkAuth();
-        navigate('/');
+        // Добавляем небольшую задержку, чтобы cookie успел установиться
+        setTimeout(async () => {
+          await checkAuth();
+          navigate('/');
+        }, 100);
       } else {
         setError(data.message || 'Ошибка входа');
       }

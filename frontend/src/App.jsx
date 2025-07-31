@@ -91,6 +91,12 @@ function App() {
       .catch((error) => {
         console.log('❌ Ошибка авторизации:', error.message);
         setIsAuth(false);
+        
+        // Если это ошибка 401, перенаправляем на логин
+        if (error.message === 'Unauthorized') {
+          console.log('🔄 Перенаправляем на страницу логина...');
+          window.location.href = '/login';
+        }
       })
       .finally(() => {
         console.log('🏁 Завершаем проверку авторизации');

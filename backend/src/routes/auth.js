@@ -21,6 +21,21 @@ const authMiddleware = (req, res, next) => {
   jwt.verify(token, JWT_SECRET, (err, decoded) => {
     if (err) {
       console.log('❌ Token verification failed:', err.message);
+      
+      // Если токен истек, очищаем cookie на сервере
+      if (err.name === 'TokenExpiredError') {
+        console.log('🔄 Очищаем истекший токен на сервере');
+        res.clearCookie('token', {
+          path: '/',
+          domain: '.crmkaskad.ru',
+          secure: true,
+          sameSite: 'none'
+        });
+        res.clearCookie('token', {
+          path: '/'
+        });
+      }
+      
       return res.status(401).json({ message: "Invalid token" });
     }
     console.log('✅ Token verified successfully for user:', decoded.username);
