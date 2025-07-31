@@ -1,7 +1,7 @@
 // Утилиты для автоматической обработки авторизации
 
 // Очистка cookies при ошибке авторизации
-export function clearAuthCookies() {
+function clearAuthCookies() {
   console.log('🔄 Автоматически очищаем cookies из-за ошибки авторизации...');
   document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=.crmkaskad.ru;';
   document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;';
@@ -9,7 +9,7 @@ export function clearAuthCookies() {
 }
 
 // Автоматическая обработка fetch запросов с авторизацией
-export async function authFetch(url, options = {}) {
+async function authFetch(url, options = {}) {
   const response = await fetch(url, {
     ...options,
     credentials: 'include'
@@ -29,7 +29,7 @@ export async function authFetch(url, options = {}) {
 }
 
 // Проверка авторизации с автоматической очисткой
-export async function checkAuthStatus() {
+async function checkAuthStatus() {
   try {
     const response = await authFetch('/api/auth/me');
     if (response.ok) {
@@ -39,4 +39,10 @@ export async function checkAuthStatus() {
     console.log('Auth check failed:', error);
   }
   return false;
-} 
+}
+
+module.exports = {
+  clearAuthCookies,
+  authFetch,
+  checkAuthStatus
+}; 

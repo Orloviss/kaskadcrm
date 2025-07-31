@@ -6,7 +6,7 @@ import Main from './components/Main';
 import { OrdersHistory, OrdersStub } from './components/Orders';
 import Settings from './components/Settings';
 import Header from './components/Header';
-import { clearAuthCookies } from './utils/auth';
+const { clearAuthCookies } = require('./utils/auth');
 import './styles/main.scss';
 const { API_BASE_URL } = require('./config');
 
