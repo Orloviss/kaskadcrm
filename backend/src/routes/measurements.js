@@ -25,7 +25,7 @@ const storage = multer.diskStorage({
 const upload = multer({ 
   storage: storage,
   limits: {
-    fileSize: 10 * 1024 * 1024 // 10MB максимум
+    fileSize: 50 * 1024 * 1024 // 50MB максимум
   },
   fileFilter: (req, file, cb) => {
     // Проверяем тип файла
@@ -45,6 +45,7 @@ router.post('/upload/:orderId', upload.array('photos', 10), async (req, res) => 
     
     const { orderId } = req.params;
     const uploadedFiles = req.files;
+    res.setHeader('Cache-Control', 'no-store');
 
     if (!uploadedFiles || uploadedFiles.length === 0) {
       console.log('Файлы не загружены');
@@ -110,6 +111,7 @@ router.get('/:orderId', (req, res) => {
   try {
     console.log('Получен запрос на получение фото для заказа:', req.params.orderId);
     const { orderId } = req.params;
+    res.setHeader('Cache-Control', 'no-store');
     
     // Получаем фото из базы данных
     db.all(
@@ -150,6 +152,7 @@ router.delete('/:orderId/:photoId', (req, res) => {
   try {
     const { orderId, photoId } = req.params;
     console.log('Получен запрос на удаление фото:', photoId, 'для заказа:', orderId);
+    res.setHeader('Cache-Control', 'no-store');
     
     // Сначала получаем информацию о фото из БД
     db.get(
@@ -205,6 +208,7 @@ router.delete('/:orderId', (req, res) => {
   try {
     const { orderId } = req.params;
     console.log(`Удаляем все фото для заказа ${orderId}`);
+    res.setHeader('Cache-Control', 'no-store');
 
     // Получаем все фото заказа из БД
     db.all('SELECT * FROM measurements_photos WHERE order_id = ?', [orderId], (err, photos) => {

@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+const { API_BASE_URL } = require('../config');
 import './ArchivedOrderDetails.scss';
 
 const ArchivedOrderDetails = () => {
@@ -9,30 +10,25 @@ const ArchivedOrderDetails = () => {
   const [expenses, setExpenses] = useState([]);
 
   useEffect(() => {
-    // Загружаем архивный заказ из localStorage
-    const stored = localStorage.getItem('archivedOrders');
-    if (stored) {
-      const archivedOrders = JSON.parse(stored);
-      // Ищем заказ по id (преобразуем orderId в число для сравнения)
-      const foundOrder = archivedOrders.find(o => o.id === parseInt(orderId));
-      if (foundOrder) {
-        setOrder(foundOrder);
-        
-        // Загружаем расходы заказа (ключ по id, с фолбэком по номеру)
-        const byId = localStorage.getItem(`expenses_${foundOrder.id}`);
-        const byNumber = localStorage.getItem(`expenses_${foundOrder.orderNumber}`);
-        const savedExpenses = byId || byNumber;
-        if (savedExpenses) {
-          setExpenses(JSON.parse(savedExpenses));
+    // Загружаем заказ с сервера и показываем, даже если completedAt отсутствует
+    fetch(`${API_BASE_URL}/orders/${orderId}`, { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.order) {
+          setOrder(data.order);
+          const byId = localStorage.getItem(`expenses_${data.order.id}`);
+          const byNumber = localStorage.getItem(`expenses_${data.order.orderNumber}`);
+          const savedExpenses = byId || byNumber;
+          if (savedExpenses) setExpenses(JSON.parse(savedExpenses));
+        } else {
+          console.log('Заказ не найден:', orderId);
+          navigate('/archive');
         }
-      } else {
-        console.log('Заказ не найден в архиве:', orderId);
+      })
+      .catch(() => {
+        console.log('Не удалось загрузить заказ');
         navigate('/archive');
-      }
-    } else {
-      console.log('Архив заказов пуст');
-      navigate('/archive');
-    }
+      });
   }, [orderId, navigate]);
 
   const handleBackToArchive = () => {
