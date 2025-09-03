@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import './MeasurementsModal.scss';
+const { API_BASE_URL, UPLOADS_BASE_URL } = require('../config');
 
 function MeasurementsModal({ onClose, orderId }) {
   const [photos, setPhotos] = useState([]);
@@ -14,7 +15,7 @@ function MeasurementsModal({ onClose, orderId }) {
   const loadPhotos = async () => {
     try {
       console.log('Загружаем фото для заказа:', orderId);
-      const response = await fetch(`http://localhost:4000/api/measurements/${orderId}`);
+      const response = await fetch(`${API_BASE_URL}/measurements/${orderId}`, { credentials: 'include' });
       console.log('Статус ответа загрузки:', response.status);
       
       if (response.ok) {
@@ -115,9 +116,10 @@ function MeasurementsModal({ onClose, orderId }) {
         formData.append('photos', file);
       });
 
-      const response = await fetch(`http://localhost:4000/api/measurements/upload/${orderId}`, {
+      const response = await fetch(`${API_BASE_URL}/measurements/upload/${orderId}`, {
         method: 'POST',
-        body: formData
+        body: formData,
+        credentials: 'include'
       });
 
       if (response.ok) {
@@ -153,8 +155,9 @@ function MeasurementsModal({ onClose, orderId }) {
 
   const handleDeletePhoto = async (photoId) => {
     try {
-      const response = await fetch(`http://localhost:4000/api/measurements/${orderId}/${photoId}`, {
-        method: 'DELETE'
+      const response = await fetch(`${API_BASE_URL}/measurements/${orderId}/${photoId}`, {
+        method: 'DELETE',
+        credentials: 'include'
       });
 
       if (response.ok) {
@@ -214,7 +217,7 @@ function MeasurementsModal({ onClose, orderId }) {
                 {photos.map(photo => (
                   <div key={photo.id} className="photo-item">
                     <img
-                      src={`http://localhost:4000${photo.path}`}
+                      src={`${UPLOADS_BASE_URL}${photo.path.startsWith('/uploads') ? photo.path.substring('/uploads'.length) : photo.path}`}
                       alt={photo.originalName}
                       onClick={() => handlePhotoClick(photo)}
                     />
@@ -267,7 +270,7 @@ function MeasurementsModal({ onClose, orderId }) {
             )}
 
             <img
-              src={`http://localhost:4000${selectedPhoto.path}`}
+              src={`${UPLOADS_BASE_URL}${selectedPhoto.path.startsWith('/uploads') ? selectedPhoto.path.substring('/uploads'.length) : selectedPhoto.path}`}
               alt={selectedPhoto.originalName}
               onClick={(e) => e.stopPropagation()}
             />
