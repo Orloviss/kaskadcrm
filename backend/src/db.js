@@ -42,6 +42,25 @@ db.serialize(() => {
     upload_date DATETIME DEFAULT CURRENT_TIMESTAMP
   )`);
 
+  // Таблица заказов (серверное хранение)
+  db.run(`CREATE TABLE IF NOT EXISTS orders (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    order_number TEXT NOT NULL,
+    title TEXT NOT NULL,
+    address TEXT NOT NULL,
+    client_name TEXT NOT NULL,
+    client_phone TEXT NOT NULL,
+    contract_date TEXT NOT NULL,
+    delivery_date TEXT NOT NULL,
+    contract_amount REAL NOT NULL,
+    prepayment REAL NOT NULL,
+    responsible TEXT NOT NULL,
+    completed_at TEXT,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES users (id)
+  )`);
+
   // Заполнить дефолтными категориями, если таблица пуста
   db.get('SELECT COUNT(*) as cnt FROM categories', (err, row) => {
     if (row && row.cnt === 0) {

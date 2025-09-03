@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import CustomSelect from './CustomSelect';
+const { API_BASE_URL } = require('../config');
 import MeasurementsModal from './MeasurementsModal';
 import ExpensesModal from './ExpensesModal';
 import './OrderDetails.scss';
@@ -23,16 +24,15 @@ function OrderDetails({ isAdmin }) {
   const [expenses, setExpenses] = useState([]);
 
   useEffect(() => {
-    // Загружаем заказ из localStorage
-    const savedOrders = localStorage.getItem('orders');
-    if (savedOrders) {
-      const orders = JSON.parse(savedOrders);
-      const foundOrder = orders.find(o => o.id === parseInt(orderId));
-      if (foundOrder) {
-        setOrder(foundOrder);
-        setEditedOrder({ ...foundOrder });
-      }
-    }
+    // Загружаем заказ с сервера
+    fetch(`${API_BASE_URL}/orders/${orderId}`, { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => {
+        if (data && data.order) {
+          setOrder(data.order);
+          setEditedOrder({ ...data.order });
+        }
+      });
 
     // Загружаем расходы заказа (по id заказа)
     const savedExpensesById = localStorage.getItem(`expenses_${orderId}`);
@@ -43,17 +43,30 @@ function OrderDetails({ isAdmin }) {
 
   const handleSave = () => {
     if (!editedOrder) return;
-
-    // Обновляем заказ в localStorage
-    const savedOrders = localStorage.getItem('orders') || '[]';
-    const orders = JSON.parse(savedOrders);
-    const updatedOrders = orders.map(o => 
-      o.id === parseInt(orderId) ? editedOrder : o
-    );
-    localStorage.setItem('orders', JSON.stringify(updatedOrders));
-    
-    setOrder(editedOrder);
-    setIsEditing(false);
+    const payload = {
+      title: editedOrder.title,
+      address: editedOrder.address,
+      clientName: editedOrder.clientName,
+      clientPhone: editedOrder.clientPhone,
+      contractDate: editedOrder.contractDate,
+      deliveryDate: editedOrder.deliveryDate,
+      contractAmount: editedOrder.contractAmount,
+      prepayment: editedOrder.prepayment,
+      responsible: editedOrder.responsible
+    };
+    fetch(`${API_BASE_URL}/orders/${orderId}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: JSON.stringify(payload)
+    })
+      .then(res => res.ok ? res.json() : Promise.reject())
+      .then(() => {
+        setOrder(editedOrder);
+        setIsEditing(false);
+        try { window.dispatchEvent(new Event('orders-updated')); } catch (e) {}
+      })
+      .catch(() => alert('Ошибка сохранения'));
   };
 
   const handleComplete = async () => {
@@ -73,27 +86,13 @@ function OrderDetails({ isAdmin }) {
       console.error('Ошибка при удалении фото:', error);
     }
 
-    // Перемещаем заказ в архив
-    const savedOrders = localStorage.getItem('orders') || '[]';
-    const archivedOrders = localStorage.getItem('archivedOrders') || '[]';
-    
-    const orders = JSON.parse(savedOrders);
-    const archived = JSON.parse(archivedOrders);
-    
-    console.log('Завершаем заказ:', order);
-    console.log('Активные заказы до:', orders);
-    console.log('Архивные заказы до:', archived);
-    
-    // Удаляем из активных заказов
-    const updatedOrders = orders.filter(o => o.id !== parseInt(orderId));
-    // Добавляем в архив
-    const updatedArchived = [...archived, { ...order, completedAt: new Date().toISOString() }];
-    
-    console.log('Активные заказы после:', updatedOrders);
-    console.log('Архивные заказы после:', updatedArchived);
-    
-    localStorage.setItem('orders', JSON.stringify(updatedOrders));
-    localStorage.setItem('archivedOrders', JSON.stringify(updatedArchived));
+    // Перемещаем заказ в архив на сервере
+    try {
+      await fetch(`${API_BASE_URL}/orders/${orderId}/archive`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+    } catch {}
     try { window.dispatchEvent(new Event('orders-updated')); } catch (e) {}
     
     // Перенаправляем в архив
@@ -104,11 +103,11 @@ function OrderDetails({ isAdmin }) {
     if (!order) return;
 
     if (window.confirm('Вы уверены, что хотите полностью удалить этот заказ? Это действие нельзя отменить.')) {
-      // Удаляем заказ из localStorage
-      const savedOrders = localStorage.getItem('orders') || '[]';
-      const orders = JSON.parse(savedOrders);
-      const updatedOrders = orders.filter(o => o.id !== parseInt(orderId));
-      localStorage.setItem('orders', JSON.stringify(updatedOrders));
+      // Удаляем заказ на сервере
+      fetch(`${API_BASE_URL}/orders/${orderId}`, {
+        method: 'DELETE',
+        credentials: 'include'
+      }).catch(() => {});
       
       // Удаляем все расходы заказа
       localStorage.removeItem(`expenses_${order.id}`);

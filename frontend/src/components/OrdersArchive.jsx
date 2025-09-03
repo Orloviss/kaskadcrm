@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+const { API_BASE_URL } = require('../config');
 import './OrdersArchive.scss';
 
 const OrdersArchive = () => {
@@ -7,16 +8,10 @@ const OrdersArchive = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Загружаем архивные заказы из localStorage
-    const stored = localStorage.getItem('archivedOrders');
-    console.log('Загружаем архивные заказы:', stored);
-    if (stored) {
-      const orders = JSON.parse(stored);
-      console.log('Архивные заказы:', orders);
-      setArchivedOrders(orders);
-    } else {
-      console.log('Архивные заказы не найдены');
-    }
+    fetch(`${API_BASE_URL}/orders/archive`, { credentials: 'include' })
+      .then(res => res.json())
+      .then(data => setArchivedOrders(data.orders || []))
+      .catch(() => setArchivedOrders([]));
   }, []);
 
   const handleOrderClick = (orderId) => {
@@ -56,7 +51,9 @@ const OrdersArchive = () => {
               onClick={() => handleOrderClick(order.id)}
             >
               <div className="table-cell">{order.orderNumber}</div>
-              <div className="table-cell">{order.title}</div>
+              <div className="table-cell" title={order.title}>
+                {order.title && order.title.length > 8 ? `${order.title.slice(0, 8)}…` : order.title}
+              </div>
               <div className="table-cell">
                 {new Date(order.deliveryDate).toLocaleDateString('ru-RU')}
               </div>

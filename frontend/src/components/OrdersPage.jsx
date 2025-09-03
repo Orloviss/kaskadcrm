@@ -1,23 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+const { API_BASE_URL } = require('../config');
 import './OrdersPage.scss';
 
 function OrdersPage() {
   const [orders, setOrders] = useState([]);
   const navigate = useNavigate();
 
-  // Загружаем заказы из localStorage
+  // Загружаем заказы с сервера
   useEffect(() => {
-    const savedOrders = localStorage.getItem('orders');
-    if (savedOrders) {
-      const parsedOrders = JSON.parse(savedOrders);
-      setOrders(parsedOrders);
-    }
-    // Подписываемся на обновления заказов
-    const onUpdate = () => {
-      const updated = localStorage.getItem('orders') || '[]';
-      setOrders(JSON.parse(updated));
+    const loadOrders = () => {
+      fetch(`${API_BASE_URL}/orders`, { credentials: 'include' })
+        .then(res => res.json())
+        .then(data => setOrders(data.orders || []))
+        .catch(() => setOrders([]));
     };
+    loadOrders();
+    // Подписываемся на обновления заказов
+    const onUpdate = () => loadOrders();
     window.addEventListener('orders-updated', onUpdate);
     return () => window.removeEventListener('orders-updated', onUpdate);
   }, []);
@@ -64,8 +64,8 @@ function OrdersPage() {
                 <div className="table-cell order-number">
                   {order.orderNumber}
                 </div>
-                <div className="table-cell order-title">
-                  {order.title}
+                <div className="table-cell order-title" title={order.title}>
+                  {order.title && order.title.length > 8 ? `${order.title.slice(0, 8)}…` : order.title}
                 </div>
                 <div className="table-cell delivery-date">
                   {formatDate(order.deliveryDate)}

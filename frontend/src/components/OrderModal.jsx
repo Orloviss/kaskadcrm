@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import CustomSelect from './CustomSelect';
+const { API_BASE_URL } = require('../config');
 import './OrderModal.scss';
 import './CustomSelect.scss';
 
@@ -23,39 +24,36 @@ function OrderModal({ onClose, onOrderCreate }) {
 
   // Автоматически генерируем номер заказа и дату договора при открытии модала
   useEffect(() => {
-    // Получаем все заказы (активные и архивные) для генерации уникального номера
-    const savedOrders = localStorage.getItem('orders') || '[]';
-    const savedArchivedOrders = localStorage.getItem('archivedOrders') || '[]';
-    
-    const activeOrders = JSON.parse(savedOrders);
-    const archivedOrders = JSON.parse(savedArchivedOrders);
-    
-    // Объединяем все заказы и находим максимальный номер
-    const allOrders = [...activeOrders, ...archivedOrders];
-    
-    let maxOrderNumber = 0;
-    allOrders.forEach(order => {
-      const orderNum = parseInt(order.orderNumber);
-      if (orderNum > maxOrderNumber) {
-        maxOrderNumber = orderNum;
+    const loadAndCompute = async () => {
+      try {
+        const [activeRes, archiveRes] = await Promise.all([
+          fetch(`${API_BASE_URL}/orders`, { credentials: 'include' }),
+          fetch(`${API_BASE_URL}/orders/archive`, { credentials: 'include' })
+        ]);
+        const active = await activeRes.json().catch(() => ({ orders: [] }));
+        const archived = await archiveRes.json().catch(() => ({ orders: [] }));
+        const all = [...(active.orders || []), ...(archived.orders || [])];
+        let maxOrderNumber = 0;
+        all.forEach(o => {
+          const num = parseInt(o.order_number || o.orderNumber, 10);
+          if (!isNaN(num) && num > maxOrderNumber) maxOrderNumber = num;
+        });
+        const nextOrderNumber = (maxOrderNumber + 1).toString().padStart(3, '0');
+        setOrderNumber(nextOrderNumber);
+      } catch (e) {
+        setOrderNumber('001');
       }
-    });
-    
-    // Генерируем следующий номер
-    const nextOrderNumber = maxOrderNumber + 1;
-    setOrderNumber(nextOrderNumber.toString().padStart(3, '0'));
-    
-    // Устанавливаем текущую дату как дату договора
-    const today = new Date();
-    const todayString = today.toISOString().split('T')[0];
-    setContractDate(todayString);
+      const today = new Date();
+      setContractDate(today.toISOString().split('T')[0]);
+    };
+    loadAndCompute();
   }, []);
 
   // Вычисляем остаток
   const remainingAmount = contractAmount && prepayment ? 
     Number(contractAmount) - Number(prepayment) : 0;
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     
     if (!title || !address || !clientName || !clientPhone || !contractDate || 
@@ -80,12 +78,27 @@ function OrderModal({ onClose, onOrderCreate }) {
       contractAmount: Number(contractAmount),
       prepayment: Number(prepayment),
       remainingAmount,
-      responsible,
-      createdAt: new Date().toISOString()
+      responsible
     };
 
-    onOrderCreate(newOrder);
-    onClose();
+    try {
+      const res = await fetch(`${API_BASE_URL}/orders`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify(newOrder)
+      });
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        alert(data.message || 'Ошибка создания заказа');
+        return;
+      }
+      onOrderCreate(newOrder);
+      onClose();
+      try { window.dispatchEvent(new Event('orders-updated')); } catch (e) {}
+    } catch (err) {
+      alert('Ошибка сети при создании заказа');
+    }
   };
 
   return (
@@ -147,7 +160,6 @@ function OrderModal({ onClose, onOrderCreate }) {
                 type="tel"
                 value={clientPhone}
                 onChange={(e) => setClientPhone(e.target.value)}
-                placeholder="+7 (999) 999-99-99"
                 required
               />
             </div>
