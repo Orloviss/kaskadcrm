@@ -15,11 +15,35 @@ function authMiddleware(req, res, next) {
   });
 }
 
+function mapOrderRow(row) {
+  if (!row) return null;
+  const contractAmount = Number(row.contract_amount);
+  const prepayment = Number(row.prepayment);
+  return {
+    id: row.id,
+    userId: row.user_id,
+    orderNumber: row.order_number,
+    title: row.title,
+    address: row.address,
+    clientName: row.client_name,
+    clientPhone: row.client_phone,
+    contractDate: row.contract_date,
+    deliveryDate: row.delivery_date,
+    contractAmount,
+    prepayment,
+    remainingAmount: isNaN(contractAmount) || isNaN(prepayment) ? 0 : contractAmount - prepayment,
+    responsible: row.responsible,
+    completedAt: row.completed_at,
+    createdAt: row.created_at
+  };
+}
+
 // Получить все активные заказы
 router.get('/', authMiddleware, (req, res) => {
   db.all('SELECT * FROM orders WHERE completed_at IS NULL ORDER BY delivery_date ASC, created_at DESC', [], (err, rows) => {
     if (err) return res.status(500).json({ message: 'DB error' });
-    res.json({ orders: rows });
+    const mapped = (rows || []).map(mapOrderRow);
+    res.json({ orders: mapped });
   });
 });
 
@@ -27,7 +51,8 @@ router.get('/', authMiddleware, (req, res) => {
 router.get('/archive', authMiddleware, (req, res) => {
   db.all('SELECT * FROM orders WHERE completed_at IS NOT NULL ORDER BY completed_at DESC', [], (err, rows) => {
     if (err) return res.status(500).json({ message: 'DB error' });
-    res.json({ orders: rows });
+    const mapped = (rows || []).map(mapOrderRow);
+    res.json({ orders: mapped });
   });
 });
 
@@ -36,7 +61,7 @@ router.get('/:id', authMiddleware, (req, res) => {
   db.get('SELECT * FROM orders WHERE id = ?', [req.params.id], (err, row) => {
     if (err) return res.status(500).json({ message: 'DB error' });
     if (!row) return res.status(404).json({ message: 'Not found' });
-    res.json({ order: row });
+    res.json({ order: mapOrderRow(row) });
   });
 });
 

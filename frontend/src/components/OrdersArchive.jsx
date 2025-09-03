@@ -55,7 +55,7 @@ const OrdersArchive = () => {
                 {order.title && order.title.length > 8 ? `${order.title.slice(0, 8)}…` : order.title}
               </div>
               <div className="table-cell">
-                {new Date(order.deliveryDate).toLocaleDateString('ru-RU')}
+                {(() => { const d=new Date(order.deliveryDate); return isNaN(d.getTime())?'':d.toLocaleDateString('ru-RU'); })()}
               </div>
             </div>
           ))}

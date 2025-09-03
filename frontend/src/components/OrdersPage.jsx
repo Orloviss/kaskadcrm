@@ -23,7 +23,9 @@ function OrdersPage() {
   }, []);
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('ru-RU');
+    if (!dateString) return '';
+    const d = new Date(dateString);
+    return isNaN(d.getTime()) ? '' : d.toLocaleDateString('ru-RU');
   };
 
   const handleOrderClick = (orderId) => {

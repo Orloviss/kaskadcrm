@@ -295,7 +295,7 @@ function OrderDetails({ isAdmin }) {
               step="0.01"
             />
           ) : (
-            <div className="field-value">{currentOrder.contractAmount.toLocaleString('ru-RU')} ₽</div>
+            <div className="field-value">{Number(currentOrder.contractAmount || 0).toLocaleString('ru-RU')} ₽</div>
           )}
         </div>
 
@@ -312,13 +312,13 @@ function OrderDetails({ isAdmin }) {
                 max={currentOrder.contractAmount}
               />
             ) : (
-              <div className="field-value">{currentOrder.prepayment.toLocaleString('ru-RU')} ₽</div>
+              <div className="field-value">{Number(currentOrder.prepayment || 0).toLocaleString('ru-RU')} ₽</div>
             )}
           </div>
           <div className="form-group">
             <label>Остаток</label>
             <div className="field-value remaining-amount">
-              {(currentOrder.contractAmount - currentOrder.prepayment).toLocaleString('ru-RU')} ₽
+              {Number((currentOrder.contractAmount || 0) - (currentOrder.prepayment || 0)).toLocaleString('ru-RU')} ₽
             </div>
           </div>
         </div>
