@@ -1,0 +1,131 @@
+.orders-archive {
+  padding: 20px;
+  min-height: 100vh;
+  background: #f5f5f5;
+
+  .archive-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+
+    h1 {
+      margin: 0;
+      color: #333;
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .back-btn {
+      background: #003f4b;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      
+      cursor: pointer;
+      font-size: 14px;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background: #0056b3;
+      }
+    }
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+
+    p {
+      font-size: 18px;
+      margin: 0;
+    }
+  }
+
+  .orders-table {
+    background: white;
+    
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+
+    .table-header {
+      display: grid;
+      grid-template-columns: 80px 1fr 120px;
+      background: #f8f9fa;
+      border-bottom: 1px solid #e9ecef;
+
+      .header-cell {
+        padding: 15px;
+        font-weight: 600;
+        color: #495057;
+        font-size: 14px;
+        text-align: left;
+      }
+    }
+
+    .table-row {
+      display: grid;
+      grid-template-columns: 80px 1fr 120px;
+      border-bottom: 1px solid #e9ecef;
+      cursor: pointer;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background: #f8f9fa;
+      }
+
+      &:last-child {
+        border-bottom: none;
+      }
+
+      .table-cell {
+        padding: 15px;
+        color: #333;
+        font-size: 14px;
+        display: flex;
+        align-items: center;
+      }
+    }
+  }
+}
+
+// Мобильные стили
+@media (max-width: 768px) {
+  .orders-archive {
+    padding: 15px;
+
+    .archive-header {
+      flex-direction: column;
+      gap: 15px;
+      align-items: stretch;
+
+      h1 {
+        text-align: center;
+        font-size: 20px;
+      }
+
+      .back-btn {
+        width: 100%;
+      }
+    }
+
+    .orders-table {
+      .table-header,
+      .table-row {
+        grid-template-columns: 60px 1fr 135px;
+      }
+
+      .header-cell,
+      .table-cell {
+        padding: 12px 8px;
+        font-size: 13px;
+      }
+    }
+  }
+}
+
+.orders-archive {
+  padding: 0;
+  width: calc(100vw - 2rem);
+}

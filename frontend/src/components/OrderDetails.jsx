@@ -1,0 +1,428 @@
+import React, { useState, useEffect } from 'react';
+import { useParams, useNavigate } from 'react-router-dom';
+import CustomSelect from './CustomSelect';
+import MeasurementsModal from './MeasurementsModal';
+import ExpensesModal from './ExpensesModal';
+import './OrderDetails.scss';
+import './CustomSelect.scss';
+
+const roles = [
+  { value: 'Дизайнер', label: 'Дизайнер' },
+  { value: 'Сборщик', label: 'Сборщик' },
+  { value: 'Установщик', label: 'Установщик' }
+];
+
+function OrderDetails({ isAdmin }) {
+  const { orderId } = useParams();
+  const navigate = useNavigate();
+  const [order, setOrder] = useState(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedOrder, setEditedOrder] = useState(null);
+  const [showMeasurementsModal, setShowMeasurementsModal] = useState(false);
+  const [showExpensesModal, setShowExpensesModal] = useState(false);
+  const [expenses, setExpenses] = useState([]);
+
+  useEffect(() => {
+    // Загружаем заказ из localStorage
+    const savedOrders = localStorage.getItem('orders');
+    if (savedOrders) {
+      const orders = JSON.parse(savedOrders);
+      const foundOrder = orders.find(o => o.id === parseInt(orderId));
+      if (foundOrder) {
+        setOrder(foundOrder);
+        setEditedOrder({ ...foundOrder });
+      }
+    }
+
+    // Загружаем расходы заказа (по id заказа)
+    const savedExpensesById = localStorage.getItem(`expenses_${orderId}`);
+    if (savedExpensesById) {
+      setExpenses(JSON.parse(savedExpensesById));
+    }
+  }, [orderId]);
+
+  const handleSave = () => {
+    if (!editedOrder) return;
+
+    // Обновляем заказ в localStorage
+    const savedOrders = localStorage.getItem('orders') || '[]';
+    const orders = JSON.parse(savedOrders);
+    const updatedOrders = orders.map(o => 
+      o.id === parseInt(orderId) ? editedOrder : o
+    );
+    localStorage.setItem('orders', JSON.stringify(updatedOrders));
+    
+    setOrder(editedOrder);
+    setIsEditing(false);
+  };
+
+  const handleComplete = async () => {
+    if (!order) return;
+
+    try {
+      // Удаляем все фото заказа с сервера одним запросом
+      const response = await fetch(`http://localhost:4000/api/measurements/${orderId}`, {
+        method: 'DELETE'
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        console.log(`Удалено ${data.deletedFiles} файлов и ${data.deletedRecords} записей для заказа ${orderId}`);
+      }
+    } catch (error) {
+      console.error('Ошибка при удалении фото:', error);
+    }
+
+    // Перемещаем заказ в архив
+    const savedOrders = localStorage.getItem('orders') || '[]';
+    const archivedOrders = localStorage.getItem('archivedOrders') || '[]';
+    
+    const orders = JSON.parse(savedOrders);
+    const archived = JSON.parse(archivedOrders);
+    
+    console.log('Завершаем заказ:', order);
+    console.log('Активные заказы до:', orders);
+    console.log('Архивные заказы до:', archived);
+    
+    // Удаляем из активных заказов
+    const updatedOrders = orders.filter(o => o.id !== parseInt(orderId));
+    // Добавляем в архив
+    const updatedArchived = [...archived, { ...order, completedAt: new Date().toISOString() }];
+    
+    console.log('Активные заказы после:', updatedOrders);
+    console.log('Архивные заказы после:', updatedArchived);
+    
+    localStorage.setItem('orders', JSON.stringify(updatedOrders));
+    localStorage.setItem('archivedOrders', JSON.stringify(updatedArchived));
+    try { window.dispatchEvent(new Event('orders-updated')); } catch (e) {}
+    
+    // Перенаправляем в архив
+    navigate('/archive');
+  };
+
+  const handleDelete = () => {
+    if (!order) return;
+
+    if (window.confirm('Вы уверены, что хотите полностью удалить этот заказ? Это действие нельзя отменить.')) {
+      // Удаляем заказ из localStorage
+      const savedOrders = localStorage.getItem('orders') || '[]';
+      const orders = JSON.parse(savedOrders);
+      const updatedOrders = orders.filter(o => o.id !== parseInt(orderId));
+      localStorage.setItem('orders', JSON.stringify(updatedOrders));
+      
+      // Удаляем все расходы заказа
+      localStorage.removeItem(`expenses_${order.id}`);
+      
+      // Удаляем все фото заказа с сервера
+      try {
+        fetch(`http://localhost:4000/api/measurements/${order.orderNumber}`, {
+          method: 'DELETE'
+        }).catch(error => {
+          console.error('Ошибка при удалении фото:', error);
+        });
+      } catch (error) {
+        console.error('Ошибка при удалении фото:', error);
+      }
+      
+      // Уведомляем об изменении и возвращаемся на страницу заказов
+      try { window.dispatchEvent(new Event('orders-updated')); } catch (e) {}
+      navigate('/orders');
+    }
+  };
+
+  const handleFieldChange = (field, value) => {
+    if (!editedOrder) return;
+    
+    setEditedOrder(prev => ({
+      ...prev,
+      [field]: value
+    }));
+  };
+
+  const handleExpenseAdd = (newExpense) => {
+    const updatedExpenses = [...expenses, newExpense];
+    setExpenses(updatedExpenses);
+    
+    // Сохраняем расходы в localStorage
+    if (order && typeof order.id !== 'undefined') {
+      localStorage.setItem(`expenses_${order.id}`, JSON.stringify(updatedExpenses));
+    }
+  };
+
+  const handleExpenseDelete = (expenseId) => {
+    if (window.confirm('Вы уверены, что хотите удалить этот расход?')) {
+      const updatedExpenses = expenses.filter(exp => exp.id !== expenseId);
+      setExpenses(updatedExpenses);
+      
+      // Сохраняем обновленные расходы в localStorage
+      if (order && typeof order.id !== 'undefined') {
+        localStorage.setItem(`expenses_${order.id}`, JSON.stringify(updatedExpenses));
+      }
+    }
+  };
+
+  // Вычисляем общую себестоимость
+  const totalExpenses = expenses.reduce((sum, exp) => sum + exp.amount, 0);
+
+  if (!order) {
+    return <div className="order-details">Заказ не найден</div>;
+  }
+
+  const currentOrder = isEditing ? editedOrder : order;
+
+  return (
+    <div className="order-details">
+      <div className="details-header">
+        <div className="header-top">
+          <h2>Заказ №{order.orderNumber}</h2>
+        </div>
+        <div className="header-actions">
+          {isAdmin && (
+            !isEditing ? (
+              <button className="edit-btn" onClick={() => setIsEditing(true)}>
+                Редактировать
+              </button>
+            ) : (
+              <>
+                <button className="save-btn" onClick={handleSave}>
+                  Сохранить
+                </button>
+                <button className="cancel-btn" onClick={() => {
+                  setIsEditing(false);
+                  setEditedOrder({ ...order });
+                }}>
+                  Отмена
+                </button>
+              </>
+            )
+          )}
+          {isAdmin && (
+            <button className="complete-btn" onClick={handleComplete}>
+              Завершить
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="details-content">
+        <div className="form-group">
+          <label>Название заказа</label>
+          {isAdmin && isEditing ? (
+            <input
+              type="text"
+              value={currentOrder.title}
+              onChange={(e) => handleFieldChange('title', e.target.value)}
+            />
+          ) : (
+            <div className="field-value">{currentOrder.title}</div>
+          )}
+        </div>
+
+        <div className="form-group">
+          <label>Адрес</label>
+          {isAdmin && isEditing ? (
+            <textarea
+              value={currentOrder.address}
+              onChange={(e) => handleFieldChange('address', e.target.value)}
+              rows="2"
+            />
+          ) : (
+            <div className="field-value">{currentOrder.address}</div>
+          )}
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label>Имя клиента</label>
+            {isAdmin && isEditing ? (
+              <input
+                type="text"
+                value={currentOrder.clientName}
+                onChange={(e) => handleFieldChange('clientName', e.target.value)}
+              />
+            ) : (
+              <div className="field-value">{currentOrder.clientName}</div>
+            )}
+          </div>
+          <div className="form-group">
+            <label>Телефон</label>
+            {isAdmin && isEditing ? (
+              <input
+                type="tel"
+                value={currentOrder.clientPhone}
+                onChange={(e) => handleFieldChange('clientPhone', e.target.value)}
+              />
+            ) : (
+              <div className="field-value">{currentOrder.clientPhone}</div>
+            )}
+          </div>
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label>Дата договора</label>
+            {isAdmin && isEditing ? (
+              <input
+                type="date"
+                value={currentOrder.contractDate}
+                onChange={(e) => handleFieldChange('contractDate', e.target.value)}
+              />
+            ) : (
+              <div className="field-value">{new Date(currentOrder.contractDate).toLocaleDateString('ru-RU')}</div>
+            )}
+          </div>
+          <div className="form-group">
+            <label>Дата сдачи</label>
+            {isAdmin && isEditing ? (
+              <input
+                type="date"
+                value={currentOrder.deliveryDate}
+                onChange={(e) => handleFieldChange('deliveryDate', e.target.value)}
+              />
+            ) : (
+              <div className="field-value">{new Date(currentOrder.deliveryDate).toLocaleDateString('ru-RU')}</div>
+            )}
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label>Сумма договора</label>
+          {isAdmin && isEditing ? (
+            <input
+              type="number"
+              value={currentOrder.contractAmount}
+              onChange={(e) => handleFieldChange('contractAmount', Number(e.target.value))}
+              min="0"
+              step="0.01"
+            />
+          ) : (
+            <div className="field-value">{currentOrder.contractAmount.toLocaleString('ru-RU')} ₽</div>
+          )}
+        </div>
+
+        <div className="form-row">
+          <div className="form-group">
+            <label>Предоплата</label>
+            {isAdmin && isEditing ? (
+              <input
+                type="number"
+                value={currentOrder.prepayment}
+                onChange={(e) => handleFieldChange('prepayment', Number(e.target.value))}
+                min="0"
+                step="0.01"
+                max={currentOrder.contractAmount}
+              />
+            ) : (
+              <div className="field-value">{currentOrder.prepayment.toLocaleString('ru-RU')} ₽</div>
+            )}
+          </div>
+          <div className="form-group">
+            <label>Остаток</label>
+            <div className="field-value remaining-amount">
+              {(currentOrder.contractAmount - currentOrder.prepayment).toLocaleString('ru-RU')} ₽
+            </div>
+          </div>
+        </div>
+
+        <div className="form-group">
+          <label>Ответственный</label>
+          {isAdmin && isEditing ? (
+            <CustomSelect
+              options={roles}
+              value={currentOrder.responsible}
+              onChange={(value) => handleFieldChange('responsible', value)}
+              placeholder="Выберите ответственного"
+            />
+          ) : (
+            <div className="field-value">{currentOrder.responsible}</div>
+          )}
+        </div>
+
+        <div className="form-row">
+          <div className="form-group measurements">
+            <label>Замеры</label>
+            <button 
+              className="measurements-btn"
+              onClick={() => setShowMeasurementsModal(true)}
+            >
+              Открыть замеры
+            </button>
+          </div>
+          <div className="form-group expenses">
+            <label>Расходы</label>
+            <button 
+              className="expenses-btn"
+              onClick={() => setShowExpensesModal(true)}
+            >
+              Добавить расход
+            </button>
+          </div>
+        </div>
+
+        {/* Блок себестоимости */}
+        <div className="cost-section">
+          <div className="cost-header">
+            <h3>Себестоимость: {totalExpenses.toLocaleString('ru-RU')} ₽</h3>
+          </div>
+          
+          {expenses.length > 0 ? (
+            <div className="expenses-table">
+              <div className="table-header">
+                <div className="header-cell">Категория</div>
+                <div className="header-cell">Сумма</div>
+                <div className="header-cell">Действия</div>
+              </div>
+              
+              {expenses.map((expense) => (
+                <div key={expense.id} className="table-row">
+                  <div className="table-cell">{expense.category}</div>
+                  <div className="table-cell">{expense.amount.toLocaleString('ru-RU')} ₽</div>
+                  <div className="table-cell">
+                    <button 
+                      className="delete-expense-btn"
+                      onClick={() => handleExpenseDelete(expense.id)}
+                    >
+                      Удалить
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="no-expenses">
+              <p>Расходы не добавлены</p>
+            </div>
+          )}
+        </div>
+
+        {/* Кнопка удаления заказа */}
+        {isAdmin && (
+          <div className="delete-order-section">
+            <button className="delete-order-btn" onClick={handleDelete}>
+              Удалить заказ
+            </button>
+          </div>
+        )}
+      </div>
+
+
+
+      {showMeasurementsModal && (
+        <MeasurementsModal
+          onClose={() => setShowMeasurementsModal(false)}
+          orderId={order.orderNumber}
+        />
+      )}
+
+      {showExpensesModal && (
+        <ExpensesModal
+          onClose={() => setShowExpensesModal(false)}
+          onExpenseAdd={handleExpenseAdd}
+          orderId={order.id}
+        />
+      )}
+    </div>
+  );
+}
+
+export default OrderDetails;

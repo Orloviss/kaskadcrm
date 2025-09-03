@@ -1,0 +1,188 @@
+.orders-page {
+  padding: 16px;
+  padding-bottom: 120px; // Отступ для фиксированной кнопки
+  max-width: 100%;
+  overflow-x: auto;
+
+  .orders-header {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    align-items: stretch;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #eee;
+
+    h2 {
+      margin: 0;
+      color: #003f4b;
+      font-size: 1.1rem;
+      font-weight: 600;
+      text-align: center;
+    }
+  }
+
+  .empty-state {
+    text-align: center;
+    padding: 60px 20px;
+    color: #666;
+
+    .empty-icon {
+      font-size: 4rem;
+      margin-bottom: 16px;
+    }
+
+    h3 {
+      margin: 0 0 12px 0;
+      color: #333;
+      font-size: 1.5rem;
+    }
+
+    p {
+      margin: 0;
+      font-size: 1.1rem;
+      color: #888;
+    }
+  }
+
+  .orders-table {
+    background: white;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+
+    .table-header {
+      display: flex;
+      background: #f8f9fa;
+      border-bottom: 1px solid #e9ecef;
+      font-weight: 600;
+      color: #495057;
+
+      .header-cell {
+        flex: 1;
+        padding: 16px 12px;
+        font-size: 0.9rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        text-align: center;
+
+        &:first-child {
+          flex: 0 0 80px; // Номер заказа - фиксированная ширина
+        }
+
+        &:last-child {
+          flex: 0 0 120px; // Дата сдачи - фиксированная ширина
+        }
+      }
+    }
+
+    .table-body {
+              .table-row {
+          display: flex;
+          border-bottom: 1px solid #f1f3f4;
+          transition: background-color 0.2s;
+          cursor: pointer;
+
+          &:hover {
+            background-color: #f8f9fa;
+          }
+
+          &:last-child {
+            border-bottom: none;
+          }
+
+        .table-cell {
+          flex: 1;
+          padding: 16px 12px;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          text-align: center;
+
+          &:first-child {
+            flex: 0 0 80px; // Номер заказа - фиксированная ширина
+            font-weight: 600;
+            color: #003f4b;
+            font-family: 'Courier New', monospace;
+          }
+
+          &:last-child {
+            flex: 0 0 120px; // Дата сдачи - фиксированная ширина
+            color: #666;
+            font-size: 0.9rem;
+          }
+
+          &.order-title {
+            font-weight: 500;
+            color: #333;
+            text-align: left;
+            justify-content: flex-start;
+          }
+        }
+      }
+    }
+  }
+
+  .orders-actions {
+    position: fixed;
+    bottom: 49px;
+    left: 0;
+    z-index: 100;
+    width: -webkit-fill-available;
+    .archive-btn {
+      background: #87ceeb; // Светло-синий цвет
+      color: #333;
+      border: none;
+      padding: 10px 24px;
+      font-size: 1rem;
+      font-weight: 600;
+      width: -webkit-fill-available;
+      cursor: pointer;
+      transition: background-color 0.2s;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+
+      &:hover {
+        background: #7ac5e0;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+      }
+    }
+  }
+}
+
+// Стили для кнопки "Добавить заказ" на главной странице
+.funds-actions {
+  .add-order-btn {
+    background: #ff9800;
+    color: white;
+    border: none;
+    padding: 2rem;
+    
+    font-size: 1.2rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    margin-bottom: 0.625rem;
+    width: 15.625rem;
+
+    &:hover {
+      background: #f57c00;
+    }
+  }
+}
+
+.table-body {
+  overflow: scroll;
+  height: calc(100vh - 17rem);
+}
+
+.orders-page .orders-table {
+  width: calc(100vw - 2rem);
+}
+.orders-page .orders-table .table-header .header-cell {
+  padding: 10px 4px;
+  font-size: 0.8rem;
+}
+.orders-page .orders-table .table-body .table-row .table-cell:first-child {
+  padding: 10px 4px;
+} 

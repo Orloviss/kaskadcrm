@@ -3,7 +3,11 @@ import { BrowserRouter as Router, Route, Routes, Navigate, useLocation, useNavig
 import Login from './components/Login';
 import Register from './components/Register';
 import Main from './components/Main';
-import { OrdersHistory, OrdersStub } from './components/Orders';
+import { OrdersHistory } from './components/Orders';
+import OrdersPage from './components/OrdersPage';
+import OrderDetails from './components/OrderDetails';
+import OrdersArchive from './components/OrdersArchive';
+import ArchivedOrderDetails from './components/ArchivedOrderDetails';
 import Settings from './components/Settings';
 import Header from './components/Header';
 const { clearAuthCookies } = require('./utils/auth');
@@ -22,7 +26,7 @@ function BottomBar({ activeTab }) {
   );
 }
 
-function AppRoutes({ isAuth, totalIncome, totalExpense, transactions, setTransactions, checkAuth }) {
+function AppRoutes({ isAuth, isAdmin, totalIncome, totalExpense, transactions, setTransactions, checkAuth }) {
   const location = useLocation();
   let activeTab = 'finances';
   if (location.pathname === '/history') activeTab = 'history';
@@ -47,9 +51,12 @@ function AppRoutes({ isAuth, totalIncome, totalExpense, transactions, setTransac
     <>
       <Header totalIncome={totalIncome} totalExpense={totalExpense} />
       <Routes>
-        <Route path="/" element={<Main transactions={transactions} setTransactions={setTransactions} />} />
+        <Route path="/" element={<Main transactions={transactions} setTransactions={setTransactions} isAdmin={isAdmin} />} />
         <Route path="/history" element={<OrdersHistory transactions={transactions} setTransactions={setTransactions} />} />
-        <Route path="/orders" element={<OrdersStub />} />
+        <Route path="/orders" element={<OrdersPage />} />
+        <Route path="/orders/:orderId" element={<OrderDetails isAdmin={isAdmin} />} />
+        <Route path="/archive" element={<OrdersArchive />} />
+        <Route path="/archive/:orderId" element={<ArchivedOrderDetails />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>
@@ -64,6 +71,7 @@ function App() {
   const [transactions, setTransactions] = useState([]);
   const [totalIncome, setTotalIncome] = useState(0);
   const [totalExpense, setTotalExpense] = useState(0);
+  const [currentUser, setCurrentUser] = useState(null);
 
   // Проверка авторизации через cookie
   const checkAuth = () => {
@@ -92,13 +100,17 @@ function App() {
       });
     
     return Promise.race([authPromise, timeoutPromise])
-      .then(() => {
+      .then((data) => {
         console.log('✅ Устанавливаем статус авторизован');
         setIsAuth(true);
+        // Сервер может вернуть { user: {...} } или сам объект пользователя
+        const normalizedUser = data && data.user ? data.user : data;
+        setCurrentUser(normalizedUser || null);
       })
       .catch((error) => {
         console.log('❌ Ошибка авторизации:', error.message);
         setIsAuth(false);
+        setCurrentUser(null);
         
         // Если это ошибка 401 и мы не на странице логина/регистрации, перенаправляем на логин
         if (error.message === 'Unauthorized' && !window.location.pathname.includes('/login') && !window.location.pathname.includes('/register')) {
@@ -153,6 +165,15 @@ function App() {
       <div className="crm-wrapper">
         <AppRoutes 
           isAuth={isAuth} 
+          isAdmin={Boolean(
+            currentUser && (
+              currentUser.isAdmin === true ||
+              (typeof currentUser.role === 'string' && (() => {
+                const roleLc = currentUser.role.toLowerCase();
+                return roleLc === 'admin' || roleLc === 'админ';
+              })())
+            )
+          )}
           totalIncome={totalIncome} 
           totalExpense={totalExpense} 
           transactions={transactions} 

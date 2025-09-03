@@ -1,0 +1,46 @@
+.success-modal {
+  background: white;
+  
+  padding: 24px;
+  margin: 16px;
+  width: calc(100vw - 32px);
+  max-width: 400px;
+  text-align: center;
+  box-shadow: 0 0.125rem 0.75rem rgba(0, 0, 0, 0.07);
+
+  .success-icon {
+    font-size: 3rem;
+    margin-bottom: 16px;
+  }
+
+  h3 {
+    margin: 0 0 12px 0;
+    color: #003f4b;
+    font-size: 1.5rem;
+    font-weight: 600;
+  }
+
+  p {
+    margin: 0 0 20px 0;
+    color: #666;
+    font-size: 1rem;
+    line-height: 1.4;
+  }
+
+  .close-btn {
+    background: #003f4b;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    width: 100%;
+
+    &:hover {
+      background: #002a32;
+    }
+  }
+}

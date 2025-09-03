@@ -1,0 +1,144 @@
+.expenses-modal {
+  background: white;
+  padding: 0;
+  width: 90%;
+  max-width: 400px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 1px solid #e9ecef;
+
+    h3 {
+      margin: 0;
+      color: #333;
+      font-size: 18px;
+      font-weight: 600;
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: #666;
+      cursor: pointer;
+      padding: 0;
+      width: 30px;
+      height: 30px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 50%;
+      transition: background-color 0.2s;
+
+      &:hover {
+        background: #f8f9fa;
+        color: #333;
+      }
+    }
+  }
+
+  form {
+    padding: 25px;
+
+    .form-group {
+      margin-bottom: 20px;
+
+      label {
+        display: block;
+        font-weight: 600;
+        color: #495057;
+        margin-bottom: 8px;
+        font-size: 14px;
+      }
+
+      input {
+        width: 100%;
+        padding: 12px;
+        border: 1px solid #e9ecef;
+        font-size: 14px;
+        transition: border-color 0.2s;
+
+        &:focus {
+          outline: none;
+          border-color: #007bff;
+        }
+
+        &::placeholder {
+          color: #adb5bd;
+        }
+      }
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 15px;
+      margin-top: 30px;
+
+      button {
+        flex: 1;
+        padding: 12px;
+        border: none;
+        
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+
+        &.cancel-btn {
+          background: #f8f9fa;
+          color: #495057;
+          border: 1px solid #e9ecef;
+
+          &:hover {
+            background: #e9ecef;
+            color: #333;
+          }
+        }
+
+        &.submit-btn {
+          background: #007bff;
+          color: white;
+
+          &:hover {
+            background: #0056b3;
+          }
+        }
+      }
+    }
+  }
+}
+
+// Мобильные стили
+@media (max-width: 768px) {
+  .expenses-modal {
+    width: 95%;
+    margin: 20px;
+
+    .modal-header {
+      padding: 15px 20px;
+
+      h3 {
+        font-size: 16px;
+      }
+    }
+
+    form {
+      padding: 20px;
+
+      .modal-actions {
+        flex-direction: column;
+        gap: 10px;
+      }
+    }
+  }
+}
+
+.form-group input {
+  width: -webkit-fill-available !important;
+}

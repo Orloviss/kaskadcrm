@@ -32,6 +32,16 @@ db.serialize(() => {
     type TEXT
   )`);
 
+  db.run(`CREATE TABLE IF NOT EXISTS measurements_photos (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    order_id TEXT NOT NULL,
+    filename TEXT NOT NULL,
+    original_name TEXT NOT NULL,
+    file_path TEXT NOT NULL,
+    file_size INTEGER NOT NULL,
+    upload_date DATETIME DEFAULT CURRENT_TIMESTAMP
+  )`);
+
   // Заполнить дефолтными категориями, если таблица пуста
   db.get('SELECT COUNT(*) as cnt FROM categories', (err, row) => {
     if (row && row.cnt === 0) {

@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const cookieParser = require('cookie-parser');
 const authRoutes = require('./routes/auth');
 const fundsRoutes = require('./routes/funds');
+const measurementsRoutes = require('./routes/measurements');
 const db = require('./db');
 
 const app = express();
@@ -40,6 +41,7 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 
 // Роуты
 app.use('/api/auth', authRoutes);
+app.use('/api/measurements', measurementsRoutes);
 
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers['authorization'];

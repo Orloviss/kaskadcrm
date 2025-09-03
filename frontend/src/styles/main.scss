@@ -648,6 +648,23 @@ span.dot-income, span.dot-expense {
   margin-left: 1rem;
 }
 
+// Стили для модального окна
+.modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  padding: 20px;
+}
+.order-modal {
+  margin: 0;
+}
 // Стили для блока балансов
 .balance-block {
   width: calc(100% - 6rem);
@@ -697,4 +714,15 @@ span.dot-income, span.dot-expense {
       font-size: 1rem;
     }
   }
+}
+.details-content {
+  padding-bottom: 5rem;
+}
+.orders-page {
+  padding-top: 0;
+  padding-left: 0;
+  padding-right: 0;
+}
+.orders-header {
+  margin: 0 !important;
 }
