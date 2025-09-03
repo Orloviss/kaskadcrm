@@ -10,8 +10,30 @@ import './CustomSelect.scss';
 const roles = [
   { value: 'Дизайнер', label: 'Дизайнер' },
   { value: 'Сборщик', label: 'Сборщик' },
+  { value: 'Технолог', label: 'Технолог' },
   { value: 'Установщик', label: 'Установщик' }
 ];
+
+const roleToUsers = {
+  'Дизайнер': [
+    { value: 'Миша', label: 'Миша' },
+    { value: 'Коля', label: 'Коля' },
+    { value: 'Светлана', label: 'Светлана' },
+    { value: 'Екатерина', label: 'Екатерина' }
+  ],
+  'Сборщик': [
+    { value: 'Дима', label: 'Дима' },
+    { value: 'Ваня', label: 'Ваня' }
+  ],
+  'Технолог': [
+    { value: 'Коля', label: 'Коля' },
+    { value: 'Миша', label: 'Миша' }
+  ],
+  'Установщик': [
+    { value: 'Дима', label: 'Дима' },
+    { value: 'Ваня', label: 'Ваня' }
+  ]
+};
 
 function OrderDetails({ isAdmin }) {
   const { orderId } = useParams();
@@ -22,6 +44,8 @@ function OrderDetails({ isAdmin }) {
   const [showMeasurementsModal, setShowMeasurementsModal] = useState(false);
   const [showExpensesModal, setShowExpensesModal] = useState(false);
   const [expenses, setExpenses] = useState([]);
+  const [responsibleRole, setResponsibleRole] = useState('');
+  const [responsibleUser, setResponsibleUser] = useState('');
 
   useEffect(() => {
     // Загружаем заказ с сервера
@@ -40,6 +64,17 @@ function OrderDetails({ isAdmin }) {
       setExpenses(JSON.parse(savedExpensesById));
     }
   }, [orderId]);
+
+  // Инициализируем разбиение ответственного на роль и имя
+  useEffect(() => {
+    const source = isEditing ? editedOrder : order;
+    if (!source || !source.responsible) return;
+    const parts = String(source.responsible).split(':').map(s => s.trim());
+    if (parts.length >= 2) {
+      if (!responsibleRole) setResponsibleRole(parts[0]);
+      if (!responsibleUser) setResponsibleUser(parts.slice(1).join(':').trim());
+    }
+  }, [order, editedOrder, isEditing]);
 
   const handleSave = () => {
     if (!editedOrder) return;
@@ -326,12 +361,31 @@ function OrderDetails({ isAdmin }) {
         <div className="form-group">
           <label>Ответственный</label>
           {isAdmin && isEditing ? (
-            <CustomSelect
-              options={roles}
-              value={currentOrder.responsible}
-              onChange={(value) => handleFieldChange('responsible', value)}
-              placeholder="Выберите ответственного"
-            />
+            <>
+              <CustomSelect
+                options={roles}
+                value={responsibleRole}
+                onChange={(value) => {
+                  setResponsibleRole(value);
+                  setResponsibleUser('');
+                  handleFieldChange('responsible', value ? `${value}: ` : '');
+                }}
+                placeholder="Роль"
+              />
+              {responsibleRole && (
+                <div style={{ marginTop: 8 }}>
+                  <CustomSelect
+                    options={roleToUsers[responsibleRole] || []}
+                    value={responsibleUser}
+                    onChange={(value) => {
+                      setResponsibleUser(value);
+                      handleFieldChange('responsible', `${responsibleRole}: ${value}`);
+                    }}
+                    placeholder="Сотрудник"
+                  />
+                </div>
+              )}
+            </>
           ) : (
             <div className="field-value">{currentOrder.responsible}</div>
           )}
