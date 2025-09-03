@@ -127,23 +127,31 @@ function OrderDetails({ isAdmin }) {
     navigate('/archive');
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     if (!order) return;
 
     if (window.confirm('Вы уверены, что хотите полностью удалить этот заказ? Это действие нельзя отменить.')) {
+      // Удаляем заказ из localStorage
+      const savedOrders = localStorage.getItem('orders') || '[]';
+      const orders = JSON.parse(savedOrders);
+      const updatedOrders = orders.filter(o => o.id !== parseInt(orderId));
+      localStorage.setItem('orders', JSON.stringify(updatedOrders));
+      
+      // Удаляем все расходы заказа
+      localStorage.removeItem(`expenses_${order.id}`);
+      
       // Удаляем все фото заказа на сервере
       try {
         await fetch(`${API_BASE_URL}/measurements/${order.orderNumber}`, { method: 'DELETE', credentials: 'include' });
       } catch (e) {}
-
-      // Удаляем заказ на сервере
-      fetch(`${API_BASE_URL}/orders/${orderId}`, {
-        method: 'DELETE',
-        credentials: 'include'
-      }).catch(() => {});
       
-      // Удаляем все расходы заказа
-      localStorage.removeItem(`expenses_${order.id}`);
+      // Удаляем заказ на сервере
+      try {
+        await fetch(`${API_BASE_URL}/orders/${orderId}`, {
+          method: 'DELETE',
+          credentials: 'include'
+        });
+      } catch (e) {}
       
       // Уведомляем об изменении и возвращаемся на страницу заказов
       try { window.dispatchEvent(new Event('orders-updated')); } catch (e) {}
