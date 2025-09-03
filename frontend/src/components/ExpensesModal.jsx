@@ -7,6 +7,7 @@ const expenseCategories = [
   { value: 'Плиты', label: 'Плиты' },
   { value: 'Фасады', label: 'Фасады' },
   { value: 'Фурнитура', label: 'Фурнитура' },
+  { value: 'Доставка', label: 'Доставка' },
   { value: 'Работа', label: 'Работа' },
   { value: 'Прочее', label: 'Прочее' }
 ];
