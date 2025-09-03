@@ -167,6 +167,40 @@ const ArchivedOrderDetails = ({ isAdmin }) => {
             )}
           </div>
         </div>
+
+        {/* Кнопка удаления заказа (только для админа) */}
+        {isAdmin && (
+          <div className="delete-order-section">
+            <button 
+              className="delete-order-btn" 
+              onClick={async () => {
+                if (window.confirm('Вы уверены, что хотите полностью удалить этот заказ? Это действие нельзя отменить.')) {
+                  // Удаляем все фото заказа на сервере
+                  try {
+                    await fetch(`${API_BASE_URL}/measurements/${order.orderNumber}`, { 
+                      method: 'DELETE', 
+                      credentials: 'include' 
+                    });
+                  } catch (e) {}
+                  
+                  // Удаляем заказ на сервере
+                  try {
+                    await fetch(`${API_BASE_URL}/orders/${orderId}`, {
+                      method: 'DELETE',
+                      credentials: 'include'
+                    });
+                  } catch (e) {}
+                  
+                  // Уведомляем об изменении и возвращаемся в архив
+                  try { window.dispatchEvent(new Event('orders-updated')); } catch (e) {}
+                  navigate('/archive');
+                }
+              }}
+            >
+              Удалить заказ
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
