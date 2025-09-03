@@ -5,6 +5,7 @@ import './OrdersPage.scss';
 
 function OrdersPage() {
   const [orders, setOrders] = useState([]);
+  const [sortDesc, setSortDesc] = useState(true);
   const navigate = useNavigate();
 
   // Загружаем заказы с сервера
@@ -51,13 +52,24 @@ function OrdersPage() {
       ) : (
         <div className="orders-table">
           <div className="table-header">
-            <div className="header-cell">№</div>
+            <div className="header-cell" style={{ cursor: 'pointer' }} onClick={(e) => {
+              e.stopPropagation();
+              setSortDesc(prev => !prev);
+            }}>
+              № {sortDesc ? '↓' : '↑'}
+            </div>
             <div className="header-cell">Название</div>
             <div className="header-cell">Дата сдачи</div>
           </div>
           
           <div className="table-body">
-            {orders.map((order) => (
+            {[...orders]
+              .sort((a, b) => {
+                const na = parseInt(a.orderNumber, 10) || 0;
+                const nb = parseInt(b.orderNumber, 10) || 0;
+                return sortDesc ? (nb - na) : (na - nb);
+              })
+              .map((order) => (
               <div 
                 key={order.id} 
                 className="table-row"

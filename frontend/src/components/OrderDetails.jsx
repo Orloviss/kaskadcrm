@@ -114,20 +114,6 @@ function OrderDetails({ isAdmin }) {
   const handleComplete = async () => {
     if (!order) return;
 
-    try {
-      // Удаляем все фото заказа с сервера одним запросом
-      const response = await fetch(`http://localhost:4000/api/measurements/${orderId}`, {
-        method: 'DELETE'
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        console.log(`Удалено ${data.deletedFiles} файлов и ${data.deletedRecords} записей для заказа ${orderId}`);
-      }
-    } catch (error) {
-      console.error('Ошибка при удалении фото:', error);
-    }
-
     // Перемещаем заказ в архив на сервере
     try {
       await fetch(`${API_BASE_URL}/orders/${orderId}/archive`, {
@@ -145,6 +131,11 @@ function OrderDetails({ isAdmin }) {
     if (!order) return;
 
     if (window.confirm('Вы уверены, что хотите полностью удалить этот заказ? Это действие нельзя отменить.')) {
+      // Удаляем все фото заказа на сервере
+      try {
+        await fetch(`${API_BASE_URL}/measurements/${order.orderNumber}`, { method: 'DELETE', credentials: 'include' });
+      } catch (e) {}
+
       // Удаляем заказ на сервере
       fetch(`${API_BASE_URL}/orders/${orderId}`, {
         method: 'DELETE',
@@ -153,17 +144,6 @@ function OrderDetails({ isAdmin }) {
       
       // Удаляем все расходы заказа
       localStorage.removeItem(`expenses_${order.id}`);
-      
-      // Удаляем все фото заказа с сервера
-      try {
-        fetch(`http://localhost:4000/api/measurements/${order.orderNumber}`, {
-          method: 'DELETE'
-        }).catch(error => {
-          console.error('Ошибка при удалении фото:', error);
-        });
-      } catch (error) {
-        console.error('Ошибка при удалении фото:', error);
-      }
       
       // Уведомляем об изменении и возвращаемся на страницу заказов
       try { window.dispatchEvent(new Event('orders-updated')); } catch (e) {}
