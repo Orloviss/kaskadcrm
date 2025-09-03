@@ -52,7 +52,7 @@ const ArchivedOrderDetails = ({ isAdmin }) => {
     <div className="archived-order-details">
       <div className="details-header">
         <h2>Заказ №{order.orderNumber}</h2>
-        <div>
+        <div className="back-btns">
           <button className="back-btn" onClick={handleBackToArchive}>
             ← Назад в архив
           </button>

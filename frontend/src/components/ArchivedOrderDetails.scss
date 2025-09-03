@@ -192,3 +192,11 @@
 .archived-order-details .order-info {
   padding-bottom: 10rem;
 }
+.back-btns {
+  display: flex;
+      align-items: center;
+      button {
+
+      font-size: 12px;
+      }
+}
