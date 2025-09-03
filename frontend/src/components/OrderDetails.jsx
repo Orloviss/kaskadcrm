@@ -44,8 +44,10 @@ function OrderDetails({ isAdmin }) {
   const [showMeasurementsModal, setShowMeasurementsModal] = useState(false);
   const [showExpensesModal, setShowExpensesModal] = useState(false);
   const [expenses, setExpenses] = useState([]);
-  const [responsibleRole, setResponsibleRole] = useState('');
-  const [responsibleUser, setResponsibleUser] = useState('');
+  const [designer, setDesigner] = useState('');
+  const [assembler, setAssembler] = useState('');
+  const [technologist, setTechnologist] = useState('');
+  const [installer, setInstaller] = useState('');
 
   useEffect(() => {
     // Загружаем заказ с сервера
@@ -65,15 +67,20 @@ function OrderDetails({ isAdmin }) {
     }
   }, [orderId]);
 
-  // Инициализируем разбиение ответственного на роль и имя
+  // Инициализируем разбиение ответственного на роли и имена
   useEffect(() => {
     const source = isEditing ? editedOrder : order;
     if (!source || !source.responsible) return;
-    const parts = String(source.responsible).split(':').map(s => s.trim());
-    if (parts.length >= 2) {
-      if (!responsibleRole) setResponsibleRole(parts[0]);
-      if (!responsibleUser) setResponsibleUser(parts.slice(1).join(':').trim());
-    }
+    const chunks = String(source.responsible).split(';').map(s => s.trim());
+    const getVal = (label) => {
+      const line = chunks.find(c => c.startsWith(label+':'));
+      if (!line) return '';
+      return line.split(':').slice(1).join(':').trim();
+    };
+    if (!designer) setDesigner(getVal('Дизайнер'));
+    if (!assembler) setAssembler(getVal('Сборщик'));
+    if (!technologist) setTechnologist(getVal('Технолог'));
+    if (!installer) setInstaller(getVal('Установщик'));
   }, [order, editedOrder, isEditing]);
 
   const handleSave = () => {
@@ -359,32 +366,71 @@ function OrderDetails({ isAdmin }) {
         </div>
 
         <div className="form-group">
-          <label>Ответственный</label>
+          <label>Ответственные</label>
           {isAdmin && isEditing ? (
             <>
               <CustomSelect
-                options={roles}
-                value={responsibleRole}
+                options={roleToUsers['Дизайнер']}
+                value={designer}
                 onChange={(value) => {
-                  setResponsibleRole(value);
-                  setResponsibleUser('');
-                  handleFieldChange('responsible', value ? `${value}: ` : '');
+                  setDesigner(value);
+                  const parts = [];
+                  if (value) parts.push(`Дизайнер: ${value}`);
+                  if (assembler) parts.push(`Сборщик: ${assembler}`);
+                  if (technologist) parts.push(`Технолог: ${technologist}`);
+                  if (installer) parts.push(`Установщик: ${installer}`);
+                  handleFieldChange('responsible', parts.join('; '));
                 }}
-                placeholder="Роль"
+                placeholder="Дизайнер"
               />
-              {responsibleRole && (
-                <div style={{ marginTop: 8 }}>
-                  <CustomSelect
-                    options={roleToUsers[responsibleRole] || []}
-                    value={responsibleUser}
-                    onChange={(value) => {
-                      setResponsibleUser(value);
-                      handleFieldChange('responsible', `${responsibleRole}: ${value}`);
-                    }}
-                    placeholder="Сотрудник"
-                  />
-                </div>
-              )}
+              <div style={{ marginTop: 8 }}>
+                <CustomSelect
+                  options={roleToUsers['Сборщик']}
+                  value={assembler}
+                  onChange={(value) => {
+                    setAssembler(value);
+                    const parts = [];
+                    if (designer) parts.push(`Дизайнер: ${designer}`);
+                    if (value) parts.push(`Сборщик: ${value}`);
+                    if (technologist) parts.push(`Технолог: ${technologist}`);
+                    if (installer) parts.push(`Установщик: ${installer}`);
+                    handleFieldChange('responsible', parts.join('; '));
+                  }}
+                  placeholder="Сборщик"
+                />
+              </div>
+              <div style={{ marginTop: 8 }}>
+                <CustomSelect
+                  options={roleToUsers['Технолог']}
+                  value={technologist}
+                  onChange={(value) => {
+                    setTechnologist(value);
+                    const parts = [];
+                    if (designer) parts.push(`Дизайнер: ${designer}`);
+                    if (assembler) parts.push(`Сборщик: ${assembler}`);
+                    if (value) parts.push(`Технолог: ${value}`);
+                    if (installer) parts.push(`Установщик: ${installer}`);
+                    handleFieldChange('responsible', parts.join('; '));
+                  }}
+                  placeholder="Технолог"
+                />
+              </div>
+              <div style={{ marginTop: 8 }}>
+                <CustomSelect
+                  options={roleToUsers['Установщик']}
+                  value={installer}
+                  onChange={(value) => {
+                    setInstaller(value);
+                    const parts = [];
+                    if (designer) parts.push(`Дизайнер: ${designer}`);
+                    if (assembler) parts.push(`Сборщик: ${assembler}`);
+                    if (technologist) parts.push(`Технолог: ${technologist}`);
+                    if (value) parts.push(`Установщик: ${value}`);
+                    handleFieldChange('responsible', parts.join('; '));
+                  }}
+                  placeholder="Установщик"
+                />
+              </div>
             </>
           ) : (
             <div className="field-value">{currentOrder.responsible}</div>

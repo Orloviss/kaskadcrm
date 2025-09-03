@@ -4,33 +4,24 @@ const { API_BASE_URL } = require('../config');
 import './OrderModal.scss';
 import './CustomSelect.scss';
 
-const roleOptions = [
-  { value: 'Дизайнер', label: 'Дизайнер' },
-  { value: 'Сборщик', label: 'Сборщик' },
-  { value: 'Технолог', label: 'Технолог' },
-  { value: 'Установщик', label: 'Установщик' }
+const usersDesigner = [
+  { value: 'Миша', label: 'Миша' },
+  { value: 'Коля', label: 'Коля' },
+  { value: 'Светлана', label: 'Светлана' },
+  { value: 'Екатерина', label: 'Екатерина' }
 ];
-
-const roleToUsers = {
-  'Дизайнер': [
-    { value: 'Миша', label: 'Миша' },
-    { value: 'Коля', label: 'Коля' },
-    { value: 'Светлана', label: 'Светлана' },
-    { value: 'Екатерина', label: 'Екатерина' }
-  ],
-  'Сборщик': [
-    { value: 'Дима', label: 'Дима' },
-    { value: 'Ваня', label: 'Ваня' }
-  ],
-  'Технолог': [
-    { value: 'Коля', label: 'Коля' },
-    { value: 'Миша', label: 'Миша' }
-  ],
-  'Установщик': [
-    { value: 'Дима', label: 'Дима' },
-    { value: 'Ваня', label: 'Ваня' }
-  ]
-};
+const usersAssembler = [
+  { value: 'Дима', label: 'Дима' },
+  { value: 'Ваня', label: 'Ваня' }
+];
+const usersTechnologist = [
+  { value: 'Коля', label: 'Коля' },
+  { value: 'Миша', label: 'Миша' }
+];
+const usersInstaller = [
+  { value: 'Дима', label: 'Дима' },
+  { value: 'Ваня', label: 'Ваня' }
+];
 
 function OrderModal({ onClose, onOrderCreate }) {
   const [orderNumber, setOrderNumber] = useState('');
@@ -42,8 +33,10 @@ function OrderModal({ onClose, onOrderCreate }) {
   const [deliveryDate, setDeliveryDate] = useState('');
   const [contractAmount, setContractAmount] = useState('');
   const [prepayment, setPrepayment] = useState('');
-  const [responsibleRole, setResponsibleRole] = useState('');
-  const [responsibleUser, setResponsibleUser] = useState('');
+  const [designer, setDesigner] = useState('');
+  const [assembler, setAssembler] = useState('');
+  const [technologist, setTechnologist] = useState('');
+  const [installer, setInstaller] = useState('');
 
   // Автоматически генерируем номер заказа и дату договора при открытии модала
   useEffect(() => {
@@ -80,7 +73,7 @@ function OrderModal({ onClose, onOrderCreate }) {
     e.preventDefault();
     
     if (!title || !address || !clientName || !clientPhone || !contractDate || 
-        !deliveryDate || !contractAmount || !prepayment || !responsibleRole || !responsibleUser) {
+        !deliveryDate || !contractAmount || !prepayment) {
       alert('Пожалуйста, заполните все обязательные поля');
       return;
     }
@@ -89,6 +82,13 @@ function OrderModal({ onClose, onOrderCreate }) {
       alert('Предоплата не может быть больше суммы договора');
       return;
     }
+
+    const parts = [];
+    if (designer) parts.push(`Дизайнер: ${designer}`);
+    if (assembler) parts.push(`Сборщик: ${assembler}`);
+    if (technologist) parts.push(`Технолог: ${technologist}`);
+    if (installer) parts.push(`Установщик: ${installer}`);
+    const responsible = parts.join('; ');
 
     const newOrder = {
       orderNumber,
@@ -101,7 +101,7 @@ function OrderModal({ onClose, onOrderCreate }) {
       contractAmount: Number(contractAmount),
       prepayment: Number(prepayment),
       remainingAmount,
-      responsible: `${responsibleRole}: ${responsibleUser}`
+      responsible
     };
 
     try {
@@ -248,31 +248,41 @@ function OrderModal({ onClose, onOrderCreate }) {
           </div>
 
           <div className="form-group">
-            <label>Ответственный *</label>
+            <label>Дизайнер</label>
             <CustomSelect
-              options={roleOptions}
-              value={responsibleRole}
-              onChange={(value) => {
-                setResponsibleRole(value);
-                setResponsibleUser('');
-              }}
-              placeholder="Роль"
-              required
+              options={usersDesigner}
+              value={designer}
+              onChange={setDesigner}
+              placeholder="Выберите дизайнера"
             />
           </div>
-
-          {responsibleRole && (
-            <div className="form-group">
-              <label>Сотрудник *</label>
-              <CustomSelect
-                options={roleToUsers[responsibleRole] || []}
-                value={responsibleUser}
-                onChange={(value) => setResponsibleUser(value)}
-                placeholder="Выберите сотрудника"
-                required
-              />
-            </div>
-          )}
+          <div className="form-group">
+            <label>Сборщик</label>
+            <CustomSelect
+              options={usersAssembler}
+              value={assembler}
+              onChange={setAssembler}
+              placeholder="Выберите сборщика"
+            />
+          </div>
+          <div className="form-group">
+            <label>Технолог</label>
+            <CustomSelect
+              options={usersTechnologist}
+              value={technologist}
+              onChange={setTechnologist}
+              placeholder="Выберите технолога"
+            />
+          </div>
+          <div className="form-group">
+            <label>Установщик</label>
+            <CustomSelect
+              options={usersInstaller}
+              value={installer}
+              onChange={setInstaller}
+              placeholder="Выберите установщика"
+            />
+          </div>
 
           <div className="modal-actions">
             <button type="button" onClick={onClose} className="cancel-btn">

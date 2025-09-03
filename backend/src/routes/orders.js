@@ -80,7 +80,7 @@ router.post('/', authMiddleware, (req, res) => {
     responsible
   } = req.body;
   // Валидация: допускаем 0 для числовых значений
-  const hasEmpty = [orderNumber, title, address, clientName, clientPhone, contractDate, deliveryDate, responsible]
+  const hasEmpty = [orderNumber, title, address, clientName, clientPhone, contractDate, deliveryDate]
     .some(v => v === undefined || v === null || String(v).trim() === '');
   const hasInvalidNumbers = [contractAmount, prepayment]
     .some(v => v === undefined || v === null || isNaN(Number(v)));
@@ -89,7 +89,7 @@ router.post('/', authMiddleware, (req, res) => {
   }
   const sql = `INSERT INTO orders (user_id, order_number, title, address, client_name, client_phone, contract_date, delivery_date, contract_amount, prepayment, responsible)
                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`;
-  const params = [req.user.id, orderNumber, title, address, clientName, clientPhone, contractDate, deliveryDate, Number(contractAmount), Number(prepayment), responsible];
+  const params = [req.user.id, orderNumber, title, address, clientName, clientPhone, contractDate, deliveryDate, Number(contractAmount), Number(prepayment), (responsible || '')];
   db.run(sql, params, function(err) {
     if (err) return res.status(500).json({ message: 'DB error' });
     res.json({ id: this.lastID });
@@ -110,7 +110,7 @@ router.put('/:id', authMiddleware, (req, res) => {
     responsible
   } = req.body;
   const sql = `UPDATE orders SET title=?, address=?, client_name=?, client_phone=?, contract_date=?, delivery_date=?, contract_amount=?, prepayment=?, responsible=? WHERE id=?`;
-  const params = [title, address, clientName, clientPhone, contractDate, deliveryDate, contractAmount, prepayment, responsible, req.params.id];
+  const params = [title, address, clientName, clientPhone, contractDate, deliveryDate, contractAmount, prepayment, (responsible || ''), req.params.id];
   db.run(sql, params, function(err) {
     if (err) return res.status(500).json({ message: 'DB error' });
     res.json({ success: true });
