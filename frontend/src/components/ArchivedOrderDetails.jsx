@@ -170,7 +170,7 @@ const ArchivedOrderDetails = ({ isAdmin }) => {
 
         {/* Кнопка удаления заказа (только для админа) */}
         {isAdmin && (
-          <div className="delete-order-section">
+          <div className="delete-order-section archive__btn">
             <button 
               className="delete-order-btn" 
               onClick={async () => {
