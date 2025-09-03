@@ -4,11 +4,33 @@ const { API_BASE_URL } = require('../config');
 import './OrderModal.scss';
 import './CustomSelect.scss';
 
-const roles = [
+const roleOptions = [
   { value: 'Дизайнер', label: 'Дизайнер' },
   { value: 'Сборщик', label: 'Сборщик' },
+  { value: 'Технолог', label: 'Технолог' },
   { value: 'Установщик', label: 'Установщик' }
 ];
+
+const roleToUsers = {
+  'Дизайнер': [
+    { value: 'Миша', label: 'Миша' },
+    { value: 'Коля', label: 'Коля' },
+    { value: 'Светлана', label: 'Светлана' },
+    { value: 'Екатерина', label: 'Екатерина' }
+  ],
+  'Сборщик': [
+    { value: 'Дима', label: 'Дима' },
+    { value: 'Ваня', label: 'Ваня' }
+  ],
+  'Технолог': [
+    { value: 'Коля', label: 'Коля' },
+    { value: 'Миша', label: 'Миша' }
+  ],
+  'Установщик': [
+    { value: 'Дима', label: 'Дима' },
+    { value: 'Ваня', label: 'Ваня' }
+  ]
+};
 
 function OrderModal({ onClose, onOrderCreate }) {
   const [orderNumber, setOrderNumber] = useState('');
@@ -20,7 +42,8 @@ function OrderModal({ onClose, onOrderCreate }) {
   const [deliveryDate, setDeliveryDate] = useState('');
   const [contractAmount, setContractAmount] = useState('');
   const [prepayment, setPrepayment] = useState('');
-  const [responsible, setResponsible] = useState('');
+  const [responsibleRole, setResponsibleRole] = useState('');
+  const [responsibleUser, setResponsibleUser] = useState('');
 
   // Автоматически генерируем номер заказа и дату договора при открытии модала
   useEffect(() => {
@@ -57,7 +80,7 @@ function OrderModal({ onClose, onOrderCreate }) {
     e.preventDefault();
     
     if (!title || !address || !clientName || !clientPhone || !contractDate || 
-        !deliveryDate || !contractAmount || !prepayment || !responsible) {
+        !deliveryDate || !contractAmount || !prepayment || !responsibleRole || !responsibleUser) {
       alert('Пожалуйста, заполните все обязательные поля');
       return;
     }
@@ -78,7 +101,7 @@ function OrderModal({ onClose, onOrderCreate }) {
       contractAmount: Number(contractAmount),
       prepayment: Number(prepayment),
       remainingAmount,
-      responsible
+      responsible: `${responsibleRole}: ${responsibleUser}`
     };
 
     try {
@@ -227,13 +250,29 @@ function OrderModal({ onClose, onOrderCreate }) {
           <div className="form-group">
             <label>Ответственный *</label>
             <CustomSelect
-              options={roles}
-              value={responsible}
-              onChange={(value) => setResponsible(value)}
-              placeholder="Выберите ответственного"
+              options={roleOptions}
+              value={responsibleRole}
+              onChange={(value) => {
+                setResponsibleRole(value);
+                setResponsibleUser('');
+              }}
+              placeholder="Роль"
               required
             />
           </div>
+
+          {responsibleRole && (
+            <div className="form-group">
+              <label>Сотрудник *</label>
+              <CustomSelect
+                options={roleToUsers[responsibleRole] || []}
+                value={responsibleUser}
+                onChange={(value) => setResponsibleUser(value)}
+                placeholder="Выберите сотрудника"
+                required
+              />
+            </div>
+          )}
 
           <div className="modal-actions">
             <button type="button" onClick={onClose} className="cancel-btn">

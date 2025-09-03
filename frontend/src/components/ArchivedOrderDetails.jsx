@@ -3,7 +3,7 @@ import { useParams, useNavigate } from 'react-router-dom';
 const { API_BASE_URL } = require('../config');
 import './ArchivedOrderDetails.scss';
 
-const ArchivedOrderDetails = () => {
+const ArchivedOrderDetails = ({ isAdmin }) => {
   const { orderId } = useParams();
   const navigate = useNavigate();
   const [order, setOrder] = useState(null);
@@ -52,9 +52,26 @@ const ArchivedOrderDetails = () => {
     <div className="archived-order-details">
       <div className="details-header">
         <h2>Заказ №{order.orderNumber}</h2>
-        <button className="back-btn" onClick={handleBackToArchive}>
-          ← Назад в архив
-        </button>
+        <div>
+          <button className="back-btn" onClick={handleBackToArchive}>
+            ← Назад в архив
+          </button>
+          {isAdmin && (
+            <button
+              className="back-btn"
+              style={{ marginLeft: 10, background: '#4caf50' }}
+              onClick={async () => {
+                try {
+                  await fetch(`${API_BASE_URL}/orders/${orderId}/unarchive`, { method: 'POST', credentials: 'include' });
+                  try { window.dispatchEvent(new Event('orders-updated')); } catch (e) {}
+                  navigate('/orders');
+                } catch (e) {}
+              }}
+            >
+              Вернуть в работу
+            </button>
+          )}
+        </div>
       </div>
 
       <div className="order-info">

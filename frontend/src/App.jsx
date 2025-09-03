@@ -56,7 +56,7 @@ function AppRoutes({ isAuth, isAdmin, totalIncome, totalExpense, transactions, s
         <Route path="/orders" element={<OrdersPage />} />
         <Route path="/orders/:orderId" element={<OrderDetails isAdmin={isAdmin} />} />
         <Route path="/archive" element={<OrdersArchive />} />
-        <Route path="/archive/:orderId" element={<ArchivedOrderDetails />} />
+        <Route path="/archive/:orderId" element={<ArchivedOrderDetails isAdmin={isAdmin} />} />
         <Route path="/settings" element={<Settings />} />
         <Route path="*" element={<Navigate to="/" />} />
       </Routes>

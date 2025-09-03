@@ -125,6 +125,14 @@ router.post('/:id/archive', authMiddleware, (req, res) => {
   });
 });
 
+// Возврат из архива (в работу)
+router.post('/:id/unarchive', authMiddleware, (req, res) => {
+  db.run('UPDATE orders SET completed_at = NULL WHERE id = ?', [req.params.id], function(err) {
+    if (err) return res.status(500).json({ message: 'DB error' });
+    res.json({ success: true });
+  });
+});
+
 // Удалить заказ
 router.delete('/:id', authMiddleware, (req, res) => {
   db.run('DELETE FROM orders WHERE id = ?', [req.params.id], function(err) {
